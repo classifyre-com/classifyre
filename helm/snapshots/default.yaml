@@ -6,7 +6,7 @@ metadata:
   name: classifyre-api
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: api
@@ -25,7 +25,7 @@ metadata:
   name: classifyre-web
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: web
@@ -44,7 +44,7 @@ metadata:
   name: classifyre-api
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
 automountServiceAccountToken: true
@@ -56,7 +56,7 @@ metadata:
   name: classifyre-api-secrets
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
 type: Opaque
@@ -70,7 +70,7 @@ metadata:
   name: classifyre-db
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
 type: Opaque
@@ -84,7 +84,7 @@ metadata:
   name: classifyre-api-cli-job-template
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
 data:
@@ -118,7 +118,7 @@ data:
             "containers": [
               {
                 "name": "cli",
-                "image": "classifyre/cli:0.2.24",
+                "image": "classifyre/cli:0.2.28",
                 "imagePullPolicy": "IfNotPresent",
                 "resources": {"limits":{"cpu":"2","memory":"4Gi"},"requests":{"cpu":"500m","memory":"1Gi"}},
                 "securityContext": {"allowPrivilegeEscalation":false,"capabilities":{"drop":["ALL"]},"readOnlyRootFilesystem":false},
@@ -142,7 +142,8 @@ data:
                   {
                     "name": "HOME",
                     "value": "/tmp"
-                  },
+                  }
+                  ,
                   {
                     "name": "UV_CACHE_DIR",
                     "value": "/cache/uv"
@@ -200,7 +201,7 @@ metadata:
   name: classifyre-cli-uv-cache
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
 spec:
@@ -217,7 +218,7 @@ metadata:
   name: classifyre-cli-playwright-cache
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
 spec:
@@ -234,7 +235,7 @@ metadata:
   name: classifyre-runner-logs
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
 spec:
@@ -251,7 +252,7 @@ metadata:
   name: classifyre-api-job-manager
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
 rules:
@@ -272,7 +273,7 @@ metadata:
   name: classifyre-api-job-manager
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
 subjects:
@@ -290,7 +291,7 @@ metadata:
   name: classifyre-api
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: api
@@ -313,7 +314,7 @@ metadata:
   name: classifyre-web
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: web
@@ -336,7 +337,7 @@ metadata:
   name: classifyre-api
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: api
@@ -354,7 +355,7 @@ spec:
         app.kubernetes.io/instance: classifyre
         app.kubernetes.io/component: api
       annotations:
-        checksum/cli-job-template: bf60e76339e09da64ffc72ba744656fe33f37486b12fdb78584542871abc05d8
+        checksum/cli-job-template: 31469b88fe1670783565ccc754f97c61197765d711c4a40bc3ca8f8b6bf66461
     spec:
       serviceAccountName: classifyre-api
       automountServiceAccountToken: true
@@ -367,7 +368,7 @@ spec:
           type: RuntimeDefault
       initContainers:
         - name: prisma-migrate
-          image: classifyre/api:0.2.24
+          image: classifyre/api:0.2.28
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -410,7 +411,7 @@ spec:
                   key: CLASSIFYRE_MASKED_CONFIG_KEY
       containers:
         - name: api
-          image: classifyre/api:0.2.24
+          image: classifyre/api:0.2.28
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
@@ -450,6 +451,8 @@ spec:
                 secretKeyRef:
                   name: classifyre-api-secrets
                   key: CLASSIFYRE_MASKED_CONFIG_KEY
+            - name: DEMO_MODE
+              value: "false"
             - name: ENVIRONMENT
               value: "kubernetes"
             - name: NODE_ENV
@@ -562,7 +565,7 @@ metadata:
   name: classifyre-web
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: web
@@ -590,7 +593,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: web
-          image: classifyre/web:0.2.24
+          image: classifyre/web:0.2.28
           imagePullPolicy: IfNotPresent
           command:
             - /bin/sh
@@ -685,7 +688,7 @@ metadata:
   name: classifyre-api
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: api
@@ -717,7 +720,7 @@ metadata:
   name: classifyre-web
   labels:
     app.kubernetes.io/name: classifyre
-    helm.sh/chart: classifyre-0.2.24
+    helm.sh/chart: classifyre-0.2.28
     app.kubernetes.io/instance: classifyre
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/component: web
