@@ -39,11 +39,17 @@ type AssistantRequestMessage = {
   content: string;
 };
 
+type AssistantDemoMessage = {
+  role: "system" | "user" | "assistant";
+  content: string;
+  delayMs?: number;
+};
+
 export type AssistantOverlayProps = {
   title: string;
   summary?: string;
   promptContext: string;
-  generateText: (messages: AssistantRequestMessage[]) => Promise<string>;
+  generateText?: (messages: AssistantRequestMessage[]) => Promise<string>;
   translations?: AssistantOverlayText;
   buttonLabel?: string;
   buttonClassName?: string;
@@ -57,11 +63,14 @@ export type AssistantOverlayProps = {
   scrollAreaClassName?: string;
   initialInput?: string;
   autoAskOnMount?: boolean;
+  demoMessages?: readonly AssistantDemoMessage[];
+  autoPlayDemo?: boolean;
+  hideComposer?: boolean;
 };
 
 type ChatMessage = {
   id: string;
-  role: "user" | "assistant";
+  role: "system" | "user" | "assistant";
   content: string;
 };
 
@@ -107,6 +116,9 @@ export function AssistantAskOverlay({
   scrollAreaClassName,
   initialInput = "",
   autoAskOnMount = false,
+  demoMessages,
+  autoPlayDemo = false,
+  hideComposer = false,
 }: AssistantOverlayProps) {
   const [open, setOpen] = React.useState(false);
   const [input, setInput] = React.useState(initialInput);
@@ -115,6 +127,7 @@ export function AssistantAskOverlay({
   const [isMobile, setIsMobile] = React.useState(false);
   const endRef = React.useRef<HTMLDivElement | null>(null);
   const autoAskKeyRef = React.useRef<string | null>(null);
+  const autoDemoKeyRef = React.useRef<string | null>(null);
 
   const text = React.useMemo(
     () => ({
@@ -160,7 +173,7 @@ export function AssistantAskOverlay({
   const handleAsk = React.useCallback(
     async (value?: string) => {
       const trimmed = (value ?? input).trim();
-      if (!trimmed) {
+      if (!trimmed || !generateText) {
         return;
       }
 
@@ -239,7 +252,7 @@ export function AssistantAskOverlay({
   );
 
   React.useEffect(() => {
-    if (!inline || !autoAskOnMount || !initialInput.trim()) {
+    if (!inline || autoPlayDemo || !autoAskOnMount || !initialInput.trim()) {
       return;
     }
 
@@ -257,7 +270,68 @@ export function AssistantAskOverlay({
     }, 300);
 
     return () => window.clearTimeout(timer);
-  }, [autoAskOnMount, handleAsk, initialInput, inline, title]);
+  }, [autoAskOnMount, autoPlayDemo, handleAsk, initialInput, inline, title]);
+
+  React.useEffect(() => {
+    if (!inline || !autoPlayDemo || !demoMessages || demoMessages.length === 0) {
+      return;
+    }
+
+    const demoKey = `${title}:${demoMessages
+      .map((message) => `${message.role}:${message.content}`)
+      .join("|")}`;
+
+    if (autoDemoKeyRef.current === demoKey) {
+      return;
+    }
+
+    autoDemoKeyRef.current = demoKey;
+
+    let cancelled = false;
+
+    const sleep = (ms: number) =>
+      new Promise((resolve) => window.setTimeout(resolve, ms));
+
+    const runDemo = async () => {
+      setMessages([]);
+      setInput("");
+      setPending(false);
+
+      for (const [index, message] of demoMessages.entries()) {
+        if (cancelled) {
+          return;
+        }
+
+        if (message.role !== "user") {
+          setPending(true);
+          await sleep(index === 0 ? 300 : 700);
+          if (cancelled) {
+            return;
+          }
+        }
+
+        setPending(false);
+        setMessages((previous) => [
+          ...previous,
+          {
+            id: `${index}-${message.role}`,
+            role: message.role,
+            content: message.content,
+          },
+        ]);
+
+        await sleep(message.delayMs ?? (message.role === "user" ? 750 : 1150));
+      }
+
+      setPending(false);
+    };
+
+    void runDemo();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [autoPlayDemo, demoMessages, inline, title]);
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -281,7 +355,11 @@ export function AssistantAskOverlay({
                 key={message.id}
                 className={cn(
                   "flex",
-                  message.role === "user" ? "justify-end" : "justify-start",
+                  message.role === "user"
+                    ? "justify-end"
+                    : message.role === "system"
+                      ? "justify-center"
+                      : "justify-start",
                 )}
               >
                 <div
@@ -289,42 +367,49 @@ export function AssistantAskOverlay({
                     "max-w-[85%] overflow-x-auto px-3 py-2 text-xs whitespace-pre-wrap",
                     message.role === "user"
                       ? "bg-foreground text-primary-foreground"
+                      : message.role === "system"
+                        ? "border border-border bg-accent text-accent-foreground"
                       : "border border-border bg-background text-foreground",
                   )}
                 >
-                  {message.role === "assistant" ? (
-                    message.content || (pending ? "..." : "")
-                  ) : (
-                    message.content
-                  )}
+                  {message.content}
                 </div>
               </div>
             ))}
+            {pending ? (
+              <div className="flex justify-start">
+                <div className="border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+                  ...
+                </div>
+              </div>
+            ) : null}
             <div ref={endRef} />
           </div>
         </ScrollArea>
       ) : null}
 
-      <div className="space-y-2">
-        <Textarea
-          value={input}
-          onChange={(event) => setInput(event.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={text.placeholder}
-          className="min-h-[88px] border-2 border-border bg-background"
-        />
-        <Button
-          onClick={() => void handleAsk()}
-          disabled={!input.trim() || pending}
-          className="w-full"
-        >
-          {pending ? (
-            <Spinner size="sm" label={text.thinking} />
-          ) : (
-            text.send
-          )}
-        </Button>
-      </div>
+      {hideComposer ? null : (
+        <div className="space-y-2">
+          <Textarea
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={text.placeholder}
+            className="min-h-[88px] border-2 border-border bg-background"
+          />
+          <Button
+            onClick={() => void handleAsk()}
+            disabled={!input.trim() || pending || !generateText}
+            className="w-full"
+          >
+            {pending ? (
+              <Spinner size="sm" label={text.thinking} />
+            ) : (
+              text.send
+            )}
+          </Button>
+        </div>
+      )}
     </>
   );
 
