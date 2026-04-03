@@ -79,7 +79,6 @@ export const SearchAssetsFiltersDtoSourceTypesEnum = {
     GoogleSlides: 'GOOGLE_SLIDES',
     Wordpress: 'WORDPRESS',
     Slack: 'SLACK',
-    Sitemap: 'SITEMAP',
     S3CompatibleStorage: 'S3_COMPATIBLE_STORAGE',
     AzureBlobStorage: 'AZURE_BLOB_STORAGE',
     GoogleCloudStorage: 'GOOGLE_CLOUD_STORAGE',

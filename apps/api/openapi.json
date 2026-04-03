@@ -1145,7 +1145,6 @@
                   "GOOGLE_SLIDES",
                   "WORDPRESS",
                   "SLACK",
-                  "SITEMAP",
                   "S3_COMPATIBLE_STORAGE",
                   "AZURE_BLOB_STORAGE",
                   "GOOGLE_CLOUD_STORAGE",
@@ -4440,7 +4439,6 @@
                 "GOOGLE_SLIDES",
                 "WORDPRESS",
                 "SLACK",
-                "SITEMAP",
                 "S3_COMPATIBLE_STORAGE",
                 "AZURE_BLOB_STORAGE",
                 "GOOGLE_CLOUD_STORAGE",
@@ -4727,7 +4725,6 @@
               "GOOGLE_SLIDES",
               "WORDPRESS",
               "SLACK",
-              "SITEMAP",
               "S3_COMPATIBLE_STORAGE",
               "AZURE_BLOB_STORAGE",
               "GOOGLE_CLOUD_STORAGE",
@@ -4833,7 +4830,6 @@
                 "GOOGLE_SLIDES",
                 "WORDPRESS",
                 "SLACK",
-                "SITEMAP",
                 "S3_COMPATIBLE_STORAGE",
                 "AZURE_BLOB_STORAGE",
                 "GOOGLE_CLOUD_STORAGE",
@@ -5649,7 +5645,6 @@
               "GOOGLE_SLIDES",
               "WORDPRESS",
               "SLACK",
-              "SITEMAP",
               "S3_COMPATIBLE_STORAGE",
               "AZURE_BLOB_STORAGE",
               "GOOGLE_CLOUD_STORAGE",
@@ -7417,6 +7412,11 @@
             ],
             "example": "TWELVE_HOUR"
           },
+          "demoMode": {
+            "type": "boolean",
+            "description": "Read-only. When true, the instance runs in demo mode and all mutating operations are rejected.",
+            "example": false
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -7433,6 +7433,7 @@
           "language",
           "timezone",
           "timeFormat",
+          "demoMode",
           "createdAt",
           "updatedAt"
         ]
@@ -8190,7 +8191,6 @@
                 "GOOGLE_SLIDES",
                 "WORDPRESS",
                 "SLACK",
-                "SITEMAP",
                 "S3_COMPATIBLE_STORAGE",
                 "AZURE_BLOB_STORAGE",
                 "GOOGLE_CLOUD_STORAGE",
