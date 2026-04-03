@@ -59,8 +59,12 @@ export * from "./finding-detail-drawer";
 export * from "./source-card";
 export * from "./asset-card";
 export * from "./detector-card";
+export * from "./detector-reference-grid";
 export * from "./empty-state";
 export * from "./stats-card";
+export * from "./assistant-ask-overlay";
+export * from "./ai-assisted-card";
+export * from "./ai-prompt-popover";
 
 // Re-export mock types for convenience
 export type {
