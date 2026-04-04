@@ -13,11 +13,17 @@ import { test, expect, type Page, type APIRequestContext } from "@playwright/tes
 
 // ── Config from environment ────────────────────────────────────────────────────
 
-const PG_HOST = process.env.PG_HOST ?? "aws-0-eu-west-1.pooler.supabase.com";
-const PG_PORT = process.env.PG_PORT ?? "5432";
-const PG_USERNAME = process.env.PG_USERNAME ?? "postgres.wkyzknlmspdztzlikpkg";
-const PG_PASSWORD = process.env.PG_PASSWORD ?? "4w6CaS9KJ9wx1ajM";
-const PG_DATABASE = process.env.PG_DATABASE ?? "postgres";
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`Missing required environment variable: ${name}. Add it to apps/e2e/.env`);
+  return value;
+}
+
+const PG_HOST = requireEnv("PG_HOST");
+const PG_PORT = requireEnv("PG_PORT");
+const PG_USERNAME = requireEnv("PG_USERNAME");
+const PG_PASSWORD = requireEnv("PG_PASSWORD");
+const PG_DATABASE = requireEnv("PG_DATABASE");
 const API_BASE = process.env.API_BASE_URL ?? "http://localhost:8000";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
