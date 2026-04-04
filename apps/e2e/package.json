@@ -7,8 +7,7 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:report": "playwright show-report",
-    "test:e2e": "playwright test",
-    "codegen": "playwright codegen"
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
