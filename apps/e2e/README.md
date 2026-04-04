@@ -56,6 +56,8 @@ cd apps/e2e
 
 # Run all tests (headless)
 npx playwright test
+# or via turbo (from monorepo root)
+bun --filter @classifyre/e2e test:e2e
 
 # Run a single test file
 npx playwright test tests/postgresql-source.spec.ts
@@ -73,10 +75,10 @@ npx playwright test --ui
 npx playwright show-report
 ```
 
-From the monorepo root with bun:
+From the monorepo root (runs the turbo `test:e2e` task):
 
 ```bash
-bun --filter e2e test
+bun --filter @classifyre/e2e test:e2e
 ```
 
 ## Test suites
