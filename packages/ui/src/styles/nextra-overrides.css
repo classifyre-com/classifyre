@@ -155,3 +155,8 @@ article img {
   border: 2px solid var(--border);
   box-shadow: 4px 4px 0 0 var(--border);
 }
+
+:root ::selection {
+  background: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}

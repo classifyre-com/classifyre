@@ -3,7 +3,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import {
-  AiAssistedCard,
   Badge,
   Button,
   Card,
@@ -11,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Checkbox,
   DetectorReferenceGrid,
   SourceCatalog,
   SourceIcon,
@@ -20,10 +20,10 @@ import {
   resolveSourceCatalogMeta,
   type SourceCatalogEntry,
 } from "@workspace/ui/lib/source-catalog";
+import { softwareVersion } from "@workspace/ui/lib/software-version";
 import { getAllDetectorDocs } from "@workspace/schemas/detector-docs";
 import { getAllSourceDocs } from "@workspace/schemas/source-docs";
 
-import { AssistantDemoShowcase } from "@/components/assistant-demo-showcase";
 import { EditionGrid } from "@/components/edition-grid";
 import { getAllPosts } from "@/lib/posts";
 import { normalizeSiteUrl, safeJsonLdStringify } from "@/lib/seo";
@@ -31,14 +31,14 @@ import { normalizeSiteUrl, safeJsonLdStringify } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Detect, Classify, and Label Any Source",
   description:
-    "Classifyre detects, classifies, and labels data across databases, lakehouses, collaboration tools, analytics systems, and public content with an open-source core and enterprise deployment path.",
+    "Classifyre detects, classifies, and labels data across databases, lakehouses, collaboration tools, analytics systems, and public content with an open-source core from Docker evaluation to production Kubernetes.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     title: "Classifyre | Detect, Classify, and Label Any Source",
     description:
-      "Run Classifyre in one Docker command, explore the live demo, or deploy the platform to enterprise Kubernetes.",
+      "Run Classifyre in one Docker command, deploy the open-source core on Kubernetes, or add enterprise governance and support.",
     type: "website",
   },
   twitter: {
@@ -57,76 +57,41 @@ const sourceEntries = Object.entries(SOURCE_TYPE_CATALOG_META).map(
 );
 
 const marqueeEntries = [...sourceEntries, ...sourceEntries];
+const dockerRunCommand = [
+  "docker run --rm -p 3000:3000 \\",
+  `classifyre/all-in-one:${softwareVersion}`
+];
+const helmInstallCommand = [
+  "helm install classifyre \\",
+  "  oci://registry-1.docker.io/classifyre/classifyre-core \\",
+  `  --version ${softwareVersion}`,
+];
+const enterpriseContactEmail = "contact@classifyre.com";
+const enterpriseCapabilities = [
+  "Authorization, governance, and SLA-backed support for production programs",
+  "Cloud deployment support across Kubernetes and OpenShift estates",
+  "Multilanguage support for global compliance and operations teams",
+  "Custom sources and detectors built around your domain and workflows",
+] as const;
 
 const deploymentModes = [
   {
-    title: "One Command Start",
-    body: "Run the full stack in one all-in-one container for demos, evaluation, and local validation.",
-    marker: "RUN",
+    title: "All-in-One Docker",
+    body: "Single-container runtime for testing, demos, and getting a feel for the product. Fastest way to start, not the production topology.",
+    marker: "DKR",
     tone: "bg-accent text-accent-foreground",
   },
   {
-    title: "Live Demo",
-    body: "Show the product immediately in the public release at demo.classifyre.com before touching infrastructure.",
-    marker: "LIVE",
-    tone: "bg-card text-foreground",
-  },
-  {
-    title: "Enterprise Kubernetes",
-    body: "Move to the production topology with the Helm chart, stateless services, and Kubernetes job execution.",
+    title: "Core on Kubernetes",
+    body: "Deploy the open-source core with Helm into your own cluster. Production-ready self-hosting without enterprise-only controls and SLA coverage.",
     marker: "K8S",
     tone: "bg-card text-foreground",
   },
-] as const;
-
-const assistantDemoFlow = [
   {
-    kind: "user",
-    speaker: "Operator",
-    label: "Prompt",
-    body: "Connect my Snowflake. Here is the account URL, warehouse, and the read-only credentials.",
-  },
-  {
-    kind: "assistant",
-    speaker: "Classifyre Assistant",
-    label: "Plan",
-    body: "Opening the Snowflake source flow now. I will validate access first, then create the source only after the connection test passes.",
-  },
-  {
-    kind: "system",
-    speaker: "MCP action",
-    label: "snowflake.testConnection()",
-    body: "Credentials validated. Warehouse reachable. 14 schemas discovered and ready for source creation.",
-  },
-  {
-    kind: "assistant",
-    speaker: "Classifyre Assistant",
-    label: "Question",
-    body: "How often should this source run?",
-  },
-  {
-    kind: "user",
-    speaker: "Operator",
-    label: "Answer",
-    body: "Every working day in the morning.",
-  },
-  {
-    kind: "assistant",
-    speaker: "Classifyre Assistant",
-    label: "Schedule",
-    body: "I can schedule weekdays at 08:00 local time. What should we detect first? I would start with PII, secrets, and regulated financial content.",
-  },
-  {
-    kind: "user",
-    speaker: "Operator",
-    label: "Detector choice",
-    body: "Use PII and secrets, then add a German-specific custom detector for Steuer-ID and payroll export labels because this warehouse contains HR reporting.",
-  },
-  {
-    kind: "system",
-    speaker: "MCP action",
-    label: "source.create()",
-    body: "Snowflake source created. Weekday morning schedule saved. Built-in detectors attached. Custom detector draft prepared for German payroll signals.",
+    title: "Enterprise",
+    body: "Keep the same core and add authorization, governance, SLA-backed support, and rollout help. Contact contact@classifyre.com.",
+    marker: "ENT",
+    tone: "bg-card text-foreground",
   },
 ] as const;
 
@@ -187,6 +152,37 @@ function LandingSectionShell({
   );
 }
 
+function CommandBlock({
+  label,
+  lines,
+  inverted = false,
+}: {
+  label: string;
+  lines: readonly string[];
+  inverted?: boolean;
+}) {
+  return (
+    <div
+      className={`border-2 border-border p-4 ${
+        inverted
+          ? "bg-foreground text-primary-foreground"
+          : "bg-background text-foreground"
+      }`}
+    >
+      <div
+        className={`mb-3 text-[11px] font-mono uppercase tracking-[0.14em] ${
+          inverted ? "text-primary-foreground/55" : "text-muted-foreground"
+        }`}
+      >
+        {label}
+      </div>
+      <pre className="overflow-hidden whitespace-pre-wrap break-words font-mono text-xs leading-6 sm:text-sm">
+        <code>{lines.join("\n")}</code>
+      </pre>
+    </div>
+  );
+}
+
 export default async function HomePage() {
   const posts = await getAllPosts();
   const featuredPosts = posts.slice(0, 3);
@@ -220,7 +216,13 @@ export default async function HomePage() {
     offers: [
       {
         "@type": "Offer",
-        name: "Open Source Core",
+        name: "Docker Evaluation",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      {
+        "@type": "Offer",
+        name: "Open Source Core on Kubernetes",
         price: "0",
         priceCurrency: "USD",
       },
@@ -271,25 +273,29 @@ export default async function HomePage() {
               </h1>
               <p className="max-w-2xl text-base leading-7 text-primary-foreground/78 sm:text-lg">
                 Classifyre turns messy, distributed source data into governed
-                signals. Connect the systems you already run, detect what matters,
-                classify content and findings, and label data for security,
-                privacy, moderation, and operational workflows.
+                signals. Connect the systems you already run, detect what
+                matters, classify content and findings, and label data for
+                security, privacy, moderation, and operational workflows.
               </p>
               <p className="max-w-2xl text-sm leading-6 text-primary-foreground/62">
-                Start in one Docker command, validate in the live demo, then move
-                to enterprise Kubernetes when the rollout needs SLA, governance,
-                authentication, authorization, and multilanguage support.
+                Start with one Docker command to understand the workflow, move
+                to the open-source Helm chart for a production Kubernetes
+                cluster, and contact us when the rollout needs authorization,
+                governance, and SLA-backed support.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Button asChild className="border-2 border-accent bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button
+                asChild
+                className="border-2 border-accent bg-accent text-accent-foreground hover:bg-accent/90"
+              >
                 <a
                   href="https://demo.classifyre.com/"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  Open Demo
+                  Demo
                 </a>
               </Button>
               <Button
@@ -323,7 +329,8 @@ export default async function HomePage() {
                   {sourceEntries.length}+
                 </p>
                 <p className="mt-1 text-sm text-primary-foreground/68">
-                  Databases, lakehouses, collaboration tools, BI, and web content.
+                  Databases, lakehouses, collaboration tools, BI, and web
+                  content.
                 </p>
               </div>
               <div className="border border-primary-foreground/20 bg-primary-foreground/8 p-4">
@@ -334,7 +341,8 @@ export default async function HomePage() {
                   {activeDetectors.length}
                 </p>
                 <p className="mt-1 text-sm text-primary-foreground/68">
-                  From secrets and PII to moderation, quality, and governance tags.
+                  From secrets and PII to moderation, quality, and governance
+                  tags.
                 </p>
               </div>
               <div className="border border-primary-foreground/20 bg-primary-foreground/8 p-4">
@@ -343,7 +351,7 @@ export default async function HomePage() {
                 </p>
                 <p className="mt-2 text-3xl font-black text-accent">1 → N</p>
                 <p className="mt-1 text-sm text-primary-foreground/68">
-                  Single-container evaluation to enterprise Kubernetes rollout.
+                  Docker evaluation, Kubernetes core, then enterprise.
                 </p>
               </div>
             </div>
@@ -353,131 +361,197 @@ export default async function HomePage() {
 
       <section aria-labelledby="runtime-title">
         <LandingSectionShell tone="plain">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,0.75fr)_minmax(360px,1.25fr)] lg:items-start">
-            <div className="space-y-4">
-              <Badge
-                variant="secondary"
-                className="rounded-[4px] border-2 border-border bg-accent px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-accent-foreground"
-              >
-                Runtime
-              </Badge>
-              <div>
-                <h2
-                  id="runtime-title"
-                  className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl"
-                >
-                  One command runtime
-                </h2>
-                <p className="mt-3 max-w-2xl text-muted-foreground">
-                  Start the entire evaluation stack from one container. This
-                  section is about speed: bring Classifyre up fast, show it in a
-                  real environment, and keep the path to enterprise deployment
-                  intact.
-                </p>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="border border-border p-3">
-                  <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/60">
-                    Included
-                  </div>
-                  <p className="mt-2 text-sm text-foreground">
-                    API, UI, database, migrations, reverse proxy, and demo-safe
-                    defaults in one runtime shape.
-                  </p>
-                </div>
-                <div className="border border-border p-3">
-                  <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/60">
-                    Best use
-                  </div>
-                  <p className="mt-2 text-sm text-foreground">
-                    Fast evaluation, stakeholder walkthroughs, and local
-                    validation before enterprise rollout.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <AiAssistedCard
-              title="One Command Runtime"
-              description="All-in-one Docker image"
-              headerActions={<Marker label="3000" />}
-            >
-              <div className="space-y-5">
-                <p className="text-sm leading-6 text-muted-foreground">
-                  PostgreSQL, API, web UI, and reverse proxy bundled into one
-                  entrypoint so an evaluation environment can start from a single
-                  command and a single public port.
-                </p>
-                <div className="border-2 border-border bg-foreground p-4 text-primary-foreground">
-                  <div className="mb-3 text-[11px] font-mono uppercase tracking-[0.14em] text-primary-foreground/55">
-                    Quick start
-                  </div>
-                  <pre className="overflow-x-auto font-mono text-sm leading-6">
-                    <code>docker run --rm -p 3000:3000 classifyre-all-in-one:local</code>
-                  </pre>
-                </div>
-                <div className="flex flex-wrap gap-2 text-[11px] font-mono uppercase tracking-[0.12em] text-muted-foreground">
-                  <span className="border border-border px-3 py-1">
-                    One public port
-                  </span>
-                  <span className="border border-border px-3 py-1">
-                    Auto migrations
-                  </span>
-                  <span className="border border-border px-3 py-1">
-                    Demo-ready
-                  </span>
-                </div>
-              </div>
-            </AiAssistedCard>
-          </div>
-        </LandingSectionShell>
-      </section>
-
-      <section aria-labelledby="assistant-demo-title">
-        <LandingSectionShell tone="signal">
-            <div className="space-y-6">
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-                <div className="space-y-3">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(420px,1.28fr)] lg:items-start">
+            <div className="space-y-5">
+              <div className="space-y-3">
                 <Badge
                   variant="secondary"
                   className="rounded-[4px] border-2 border-border bg-accent px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-accent-foreground"
                 >
-                  Guided Setup Demo
+                  Deployment Path
                 </Badge>
                 <div>
                   <h2
-                    id="assistant-demo-title"
+                    id="runtime-title"
                     className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl"
                   >
-                    Assistant
+                    Three ways to run Classifyre
                   </h2>
-                  <p className="mt-3 max-w-3xl text-primary-foreground/72">
-                    This is a static marketing walkthrough, not an interactive
-                    chat. The point is the workflow: a user states intent, the
-                    assistant drives real MCP-backed product steps, and setup
-                    keeps moving without forcing deep technical knowledge.
-                  </p>
                 </div>
               </div>
-              <Button
-                asChild
-                variant="secondary"
-                className="border-2 border-primary-foreground/20 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
-              >
-                <a
-                  href="https://demo.classifyre.com/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Open live demo
-                </a>
-              </Button>
-            </div>
 
-            <AssistantDemoShowcase steps={assistantDemoFlow} />
+
+
+              {/*<div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">*/}
+              {/*  <div className="border-2 border-border bg-card p-4">*/}
+              {/*    <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">*/}
+              {/*      01 Evaluate*/}
+              {/*    </div>*/}
+              {/*    <p className="mt-2 text-sm leading-6 text-foreground">*/}
+              {/*      One Docker command. Best for testing and learning the*/}
+              {/*      product.*/}
+              {/*    </p>*/}
+              {/*  </div>*/}
+              {/*  <div className="border-2 border-border bg-card p-4">*/}
+              {/*    <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">*/}
+              {/*      02 Run in production*/}
+              {/*    </div>*/}
+              {/*    <p className="mt-2 text-sm leading-6 text-foreground">*/}
+              {/*      Helm install on your Kubernetes cluster with the open-source*/}
+              {/*      core.*/}
+              {/*    </p>*/}
+              {/*  </div>*/}
+              {/*  <div className="border-2 border-border bg-card p-4">*/}
+              {/*    <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">*/}
+              {/*      03 Add enterprise*/}
+              {/*    </div>*/}
+              {/*    <p className="mt-2 text-sm leading-6 text-foreground">*/}
+              {/*      Governance, rollout support, and platform extension for*/}
+              {/*      larger teams.*/}
+              {/*    </p>*/}
+              {/*  </div>*/}
+              {/*</div>*/}
+            </div>
+            <div>
+              <p className="mt-3 max-w-2xl text-muted-foreground">
+                Classifyre is open core. Start with the single-container
+                runtime to test the workflow, move to the Helm chart when
+                you are ready for a real cluster, and contact us when the
+                rollout needs enterprise controls and commercial support.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <Card className="panel-card h-full rounded-[16px] border-2 bg-card">
+              <CardHeader className="gap-4">
+                <div className="space-y-2">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                    01 Evaluate
+                  </div>
+                  <CardTitle className="text-2xl uppercase tracking-[0.04em]">
+                    Docker
+                  </CardTitle>
+                  <CardDescription className="text-sm leading-6 text-muted-foreground">
+                    Bring up the full product locally in one command. Use it for
+                    testing, demos, and first-touch evaluation.
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col gap-4">
+                <CommandBlock
+                  label="Quick start"
+                  lines={dockerRunCommand}
+                  inverted
+                />
+                <p className="text-sm leading-6 text-muted-foreground">
+                  Fastest setup, but not the production topology.
+                </p>
+                <div className="mt-auto pt-2">
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="w-full border-2 border-border"
+                  >
+                    <a
+                      href="https://docs.classifyre.com/deployment/docker/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Docker docs
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="panel-card h-full rounded-[16px] border-2 bg-foreground text-primary-foreground">
+              <CardHeader className="gap-4">
+                <div className="space-y-2">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary-foreground/58">
+                    02 Run in production
+                  </div>
+                  <CardTitle className="text-2xl uppercase tracking-[0.04em] text-primary-foreground">
+                    Kubernetes
+                  </CardTitle>
+                  <CardDescription className="text-sm leading-6 text-primary-foreground/72">
+                    Production-ready self-hosting with Helm on your own cluster.
+                    Same core product, no enterprise lock-in.
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col gap-4">
+                <CommandBlock label="Helm install" lines={helmInstallCommand} />
+                <p className="text-sm leading-6 text-primary-foreground/72">
+                  Production-ready core for Kubernetes clusters, without
+                  enterprise authorization, governance, or SLA coverage.
+                </p>
+                <div className="mt-auto pt-2">
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="w-full border-2 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/16"
+                  >
+                    <a
+                      href="https://docs.classifyre.com/deployment/kubernetes/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Kubernetes docs
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="panel-card h-full rounded-[16px] border-2 bg-background">
+              <CardHeader className="gap-4">
+                <div className="space-y-2">
+                  <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
+                    03 Add enterprise
+                  </div>
+                  <CardTitle className="text-2xl uppercase tracking-[0.04em]">
+                    Enterprise
+                  </CardTitle>
+                  <CardDescription className="text-sm leading-6 text-muted-foreground">
+                    Turn the open-source core into a supported platform for
+                    regulated, global, and heavily customized deployments.
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col gap-4">
+                <div>
+                  <div className="space-y-3">
+                    {enterpriseCapabilities.map((capability) => (
+                      <label
+                        key={capability}
+                        className="flex items-start gap-3 text-sm leading-6 text-foreground"
+                      >
+                        <Checkbox
+                          checked
+                          tabIndex={-1}
+                          aria-readonly="true"
+                          className="pointer-events-none mt-1"
+                        />
+                        <span>{capability}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-auto pt-2">
+                  <Button
+                    asChild
+                    className="w-full border-2 border-accent bg-accent text-accent-foreground hover:bg-accent/90"
+                  >
+                    <a href={`mailto:${enterpriseContactEmail}`}>Contact Us</a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </LandingSectionShell>
       </section>
+
 
       <section aria-labelledby="sources-title">
         <LandingSectionShell tone="plain">
@@ -491,17 +565,24 @@ export default async function HomePage() {
                   Supported Sources
                 </Badge>
                 <div>
-                  <h2 id="sources-title" className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl">
+                  <h2
+                    id="sources-title"
+                    className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl"
+                  >
                     Scan the systems you already own
                   </h2>
                   <p className="mt-3 max-w-3xl text-muted-foreground">
-                    Classifyre is built for mixed estates: operational databases,
-                    lakehouse and warehouse platforms, collaboration systems,
-                    analytics assets, and public-facing content.
+                    Classifyre is built for mixed estates: operational
+                    databases, lakehouse and warehouse platforms, collaboration
+                    systems, analytics assets, and public-facing content.
                   </p>
                 </div>
               </div>
-              <Button asChild variant="secondary" className="border-2 border-border">
+              <Button
+                asChild
+                variant="secondary"
+                className="border-2 border-border"
+              >
                 <a
                   href="https://docs.classifyre.com/"
                   target="_blank"
@@ -532,7 +613,10 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <SourceCatalog entries={searchableSourceEntries} actionLabel="Docs" />
+            <SourceCatalog
+              entries={searchableSourceEntries}
+              actionLabel="Docs"
+            />
           </div>
         </LandingSectionShell>
       </section>
@@ -548,7 +632,10 @@ export default async function HomePage() {
                 Detectors
               </Badge>
               <div>
-                <h2 id="detectors-title" className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl">
+                <h2
+                  id="detectors-title"
+                  className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl"
+                >
                   From detection to routing logic
                 </h2>
                 <p className="mt-3 max-w-3xl text-primary-foreground/72">
@@ -583,9 +670,9 @@ export default async function HomePage() {
                 <CardContent className="space-y-4">
                   <p className="text-sm leading-6">
                     Build rulesets for deterministic policies, classifiers for
-                    semantic decisions, or multilingual entity detectors with GLiNER.
-                    When detection fires, extractor blocks can pull structured fields
-                    directly into the finding.
+                    semantic decisions, or multilingual entity detectors with
+                    GLiNER. When detection fires, extractor blocks can pull
+                    structured fields directly into the finding.
                   </p>
                   <ul className="space-y-3 text-sm">
                     {customDetectorMethods.map((method) => (
@@ -607,16 +694,17 @@ export default async function HomePage() {
                         Structured output
                       </CardTitle>
                       <CardDescription>
-                        Detection can become routing metadata, spans, and extracted fields.
+                        Detection can become routing metadata, spans, and
+                        extracted fields.
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4 text-sm text-muted-foreground">
                   <p>
-                    Use extractors to capture values such as contracting parties,
-                    risk clauses, dates, IDs, and regulatory amounts once a detector
-                    has matched.
+                    Use extractors to capture values such as contracting
+                    parties, risk clauses, dates, IDs, and regulatory amounts
+                    once a detector has matched.
                   </p>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div className="border border-border bg-muted/30 p-3">
@@ -632,7 +720,8 @@ export default async function HomePage() {
                         Good fit
                       </p>
                       <p className="mt-2 text-foreground">
-                        compliance reviews, moderation pipelines, semantic tagging
+                        compliance reviews, moderation pipelines, semantic
+                        tagging
                       </p>
                     </div>
                   </div>
@@ -642,56 +731,50 @@ export default async function HomePage() {
           </div>
         </LandingSectionShell>
       </section>
-
-      <section aria-labelledby="deploy-title">
-        <LandingSectionShell tone="plain">
+      <section aria-labelledby="assistant-demo-title">
+        <LandingSectionShell tone="signal">
           <div className="space-y-6">
-            <div className="space-y-3">
-              <Badge
-                variant="secondary"
-                className="rounded-[4px] border-2 border-border bg-accent px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-accent-foreground"
-              >
-                Delivery
-              </Badge>
-              <div>
-                <h2 id="deploy-title" className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl">
-                  From fast evaluation to enterprise rollout
-                </h2>
-                <p className="mt-3 max-w-3xl text-muted-foreground">
-                  The product path is simple: validate quickly, show the demo, then
-                  move into the production topology when the workload and governance
-                  bar get real.
-                </p>
-              </div>
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-3">
-              {deploymentModes.map((mode) => (
-                <Card
-                  key={mode.title}
-                  className={`panel-card rounded-[8px] border-2 ${mode.tone}`}
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div className="space-y-3">
+                <Badge
+                    variant="secondary"
+                    className="rounded-[4px] border-2 border-border bg-accent px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-accent-foreground"
                 >
-                  <CardHeader className="gap-4">
-                    <div className="inline-flex w-fit border border-border bg-background px-3 py-1 font-mono text-[11px] uppercase tracking-[0.16em]">
-                      {mode.marker}
-                    </div>
-                    <div>
-                      <CardTitle className="text-2xl uppercase tracking-[0.04em]">
-                        {mode.title}
-                      </CardTitle>
-                      <CardDescription className="mt-2 text-current/75">
-                        {mode.body}
-                      </CardDescription>
-                    </div>
-                  </CardHeader>
-                </Card>
-              ))}
+                  Guided Setup Demo
+                </Badge>
+                <div>
+                  <h2
+                      id="assistant-demo-title"
+                      className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl"
+                  >
+                    Assistant
+                  </h2>
+                  <p className="mt-3 max-w-3xl text-primary-foreground/72">
+                    This is a static marketing walkthrough, not an interactive
+                    chat. The point is the workflow: a user states intent, the
+                    assistant drives real MCP-backed product steps, and setup
+                    keeps moving without forcing deep technical knowledge.
+                  </p>
+                </div>
+              </div>
+              <Button
+                  asChild
+                  variant="secondary"
+                  className="border-2 border-primary-foreground/20 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
+              >
+                <a
+                    href="https://demo.classifyre.com/"
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                  Open live demo
+                </a>
+              </Button>
             </div>
-
-            <EditionGrid />
           </div>
         </LandingSectionShell>
       </section>
+
 
       <section aria-labelledby="journal-title">
         <LandingSectionShell tone="signal">
@@ -705,13 +788,17 @@ export default async function HomePage() {
                   Journal
                 </Badge>
                 <div>
-                  <h2 id="journal-title" className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl">
+                  <h2
+                    id="journal-title"
+                    className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl"
+                  >
                     Product notes and engineering detail
                   </h2>
                   <p className="mt-3 max-w-3xl text-primary-foreground/72">
-                    The blog still matters. It now sits behind the product story:
-                    deployment notes, system design tradeoffs, and engineering
-                    writing for teams operating Classifyre seriously.
+                    The blog still matters. It now sits behind the product
+                    story: deployment notes, system design tradeoffs, and
+                    engineering writing for teams operating Classifyre
+                    seriously.
                   </p>
                 </div>
               </div>
@@ -726,7 +813,10 @@ export default async function HomePage() {
 
             <div className="grid gap-5 lg:grid-cols-3">
               {featuredPosts.map((post) => (
-                <Card key={post.route} className="panel-card rounded-[8px] bg-card/80">
+                <Card
+                  key={post.route}
+                  className="panel-card rounded-[8px] bg-card/80"
+                >
                   <CardHeader className="gap-3">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <span className="inline-block h-2.5 w-2.5 bg-accent" />

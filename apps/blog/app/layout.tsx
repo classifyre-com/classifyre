@@ -100,7 +100,7 @@ export const metadata: Metadata = {
 const banner = (
   <Banner storageKey="classifyre-blog-banner">
     Open-source core, acid-green signal, and deployment paths from one Docker
-    command to enterprise Kubernetes.
+    command to Kubernetes core and enterprise rollout.
   </Banner>
 );
 
@@ -146,7 +146,11 @@ const navbar = (
         className="inline-flex h-9 w-9 items-center justify-center border border-border bg-background text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
         aria-label="Classifyre on GitHub"
       >
-        <SourceIcon source="github" size="sm" className="[&_svg]:text-current" />
+        <SourceIcon
+          source="github"
+          size="sm"
+          className="[&_svg]:text-current"
+        />
       </a>
     </div>
   </Navbar>
@@ -233,7 +237,8 @@ const footer = (
                 Evaluate
               </div>
               <p className="mt-2 text-primary-foreground/78">
-                One Docker command. One public port. Immediate product validation.
+                One Docker command. One public port. Immediate product
+                validation.
               </p>
             </div>
             <div className="border border-border px-4 py-3">
@@ -241,8 +246,8 @@ const footer = (
                 Operate
               </div>
               <p className="mt-2 text-primary-foreground/78">
-                Demo the release, run real scans, and move into enterprise Kubernetes
-                when governance and SLA matter.
+                Demo the release, run real scans, and move into enterprise
+                Kubernetes when governance and SLA matter.
               </p>
             </div>
           </div>
