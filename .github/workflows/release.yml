@@ -265,7 +265,7 @@ jobs:
           build_and_push "cli" "cli-final"
 
       - name: Set up Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
 
       - name: Log in to GHCR for chart publish
         run: |
