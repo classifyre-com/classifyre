@@ -57,13 +57,11 @@ data:
                     "name": "HOME",
                     "value": "/tmp"
                   }
-                  {{- if .Values.api.cliJobs.uvCache.enabled }},
+                  ,
                   {
                     "name": "UV_CACHE_DIR",
-                    "value": "{{ .Values.api.cliJobs.uvCache.mountPath }}"
+                    "value": "{{ if .Values.api.cliJobs.uvCache.enabled }}{{ .Values.api.cliJobs.uvCache.mountPath }}{{ else }}/tmp/uv-cache{{ end }}"
                   }
-                  }
-                  {{- end }}
                   {{- range .Values.api.cliJobs.extraEnv }},
                   {{ . | toJson }}
                   {{- end }}
