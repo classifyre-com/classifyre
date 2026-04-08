@@ -717,7 +717,12 @@
     "thinking": "Wird verarbeitet",
     "assistantFailed": "Assistentenanfrage fehlgeschlagen",
     "assistantQuickStart": "Assistent Schnellstart",
-    "assistantQuickStartDesc": "Eine Vorlage auswählen oder leer beginnen. Alles kann später angepasst werden."
+    "assistantQuickStartDesc": "Eine Vorlage auswählen oder leer beginnen. Alles kann später angepasst werden.",
+    "start": "Start",
+    "startBlank": "Leer beginnen",
+    "startBlankDescription": "Beginne mit einem leeren Formular und konfiguriere die Quelle von Grund auf.",
+    "template": "Vorlage",
+    "noTemplatesAvailable": "Für diese Quelle sind noch keine Vorlagen verfügbar."
   },
   "mcp": {
     "enable": "MCP aktivieren",

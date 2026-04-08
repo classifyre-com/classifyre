@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -21,12 +19,12 @@ import {
   type SourceCatalogEntry,
 } from "@workspace/ui/lib/source-catalog";
 import { softwareVersion } from "@workspace/ui/lib/software-version";
+import { cn } from "@workspace/ui/lib/utils";
 import { getAllDetectorDocs } from "@workspace/schemas/detector-docs";
 import { getAllSourceDocs } from "@workspace/schemas/source-docs";
 
-import { EditionGrid } from "@/components/edition-grid";
-import { getAllPosts } from "@/lib/posts";
 import { normalizeSiteUrl, safeJsonLdStringify } from "@/lib/seo";
+import { AssistantDemo } from "@/components/assistant-demo";
 
 export const metadata: Metadata = {
   title: "Detect, Classify, and Label Any Source",
@@ -59,7 +57,7 @@ const sourceEntries = Object.entries(SOURCE_TYPE_CATALOG_META).map(
 const marqueeEntries = [...sourceEntries, ...sourceEntries];
 const dockerRunCommand = [
   "docker run --rm -p 3000:3000 \\",
-  `classifyre/all-in-one:${softwareVersion}`
+  `classifyre/all-in-one:${softwareVersion}`,
 ];
 const helmInstallCommand = [
   "helm install classifyre \\",
@@ -74,46 +72,12 @@ const enterpriseCapabilities = [
   "Custom sources and detectors built around your domain and workflows",
 ] as const;
 
-const deploymentModes = [
-  {
-    title: "All-in-One Docker",
-    body: "Single-container runtime for testing, demos, and getting a feel for the product. Fastest way to start, not the production topology.",
-    marker: "DKR",
-    tone: "bg-accent text-accent-foreground",
-  },
-  {
-    title: "Core on Kubernetes",
-    body: "Deploy the open-source core with Helm into your own cluster. Production-ready self-hosting without enterprise-only controls and SLA coverage.",
-    marker: "K8S",
-    tone: "bg-card text-foreground",
-  },
-  {
-    title: "Enterprise",
-    body: "Keep the same core and add authorization, governance, SLA-backed support, and rollout help. Contact contact@classifyre.com.",
-    marker: "ENT",
-    tone: "bg-card text-foreground",
-  },
-] as const;
-
 const customDetectorMethods = [
   "RULESET for deterministic patterns and policy rules",
   "CLASSIFIER for contextual domain decisions",
   "ENTITY with GLiNER for multilingual span extraction",
   "Extractor blocks for structured fields after detection",
 ] as const;
-
-function formatDate(date: string): string {
-  const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) {
-    return date;
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  }).format(parsed);
-}
 
 function Marker({ label }: { label: string }) {
   return (
@@ -127,25 +91,37 @@ function Marker({ label }: { label: string }) {
 
 function LandingSectionShell({
   tone = "plain",
+  fullWidth = false,
   children,
   className = "",
 }: {
   tone?: "signal" | "plain";
+  fullWidth?: boolean;
   children: ReactNode;
   className?: string;
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-[8px] border-2 border-border ${
+      className={cn(
+        "relative overflow-hidden",
+        fullWidth
+          ? "left-1/2 w-screen max-w-none -translate-x-1/2 rounded-none border-0"
+          : "rounded-[8px] border-2 border-border",
         tone === "signal"
           ? "bg-foreground text-primary-foreground"
-          : "bg-background text-foreground"
-      } ${className}`}
+          : "bg-background text-foreground",
+        className,
+      )}
     >
       {tone === "signal" ? (
         <div className="landing-grid absolute inset-0 opacity-30" />
       ) : null}
-      <div className="relative px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
+      <div
+        className={cn(
+          "relative py-8 sm:py-10 lg:py-12",
+          fullWidth ? "px-4 sm:px-6 lg:px-10" : "px-6 sm:px-8 lg:px-10",
+        )}
+      >
         {children}
       </div>
     </div>
@@ -176,16 +152,14 @@ function CommandBlock({
       >
         {label}
       </div>
-      <pre className="overflow-hidden whitespace-pre-wrap break-words font-mono text-xs leading-6 sm:text-sm">
+      <pre className="overflow-hidden whitespace-pre-wrap wrap-break-word font-mono text-xs leading-6 sm:text-sm">
         <code>{lines.join("\n")}</code>
       </pre>
     </div>
   );
 }
 
-export default async function HomePage() {
-  const posts = await getAllPosts();
-  const featuredPosts = posts.slice(0, 3);
+export default function HomePage() {
   const sourceDocs = getAllSourceDocs();
   const detectorDocs = getAllDetectorDocs();
   const siteUrl = normalizeSiteUrl(
@@ -238,7 +212,7 @@ export default async function HomePage() {
   };
 
   return (
-    <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+    <main className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 sm:px-6 lg:px-8">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -247,77 +221,57 @@ export default async function HomePage() {
       />
 
       <section>
-        <LandingSectionShell tone="signal">
+        <LandingSectionShell tone="signal" fullWidth>
           <div className="space-y-7">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge className="rounded-[4px] border border-accent bg-accent px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-accent-foreground">
-                Product Landing Page
-              </Badge>
-              <Badge
-                variant="secondary"
-                className="rounded-[4px] border border-primary-foreground/20 bg-primary-foreground/10 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-primary-foreground"
-              >
-                Open Core + Enterprise Path
-              </Badge>
-            </div>
-
-            <div className="space-y-5">
-              <h1 className="font-serif text-[clamp(3.9rem,9vw,6.8rem)] font-black uppercase leading-[0.84] tracking-[0.08em] text-primary-foreground">
-                <span className="block">Detect.</span>
-                <span className="block">
-                  <span className="inline-block bg-accent px-[0.14em] text-accent-foreground dark:text-primary">
-                    Classify.
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-12">
+              <div className="space-y-5 lg:flex-1">
+                <h1 className="font-serif text-[clamp(3.9rem,9vw,6.8rem)] font-black uppercase leading-[0.84] tracking-[0.08em] text-primary-foreground">
+                  <span className="block">Detect.</span>
+                  <span className="block">
+                    <span className="inline-block bg-accent px-[0.14em] text-accent-foreground dark:text-primary">
+                      Classify.
+                    </span>
                   </span>
-                </span>
-                <span className="block">Label.</span>
-              </h1>
-              <p className="max-w-2xl text-base leading-7 text-primary-foreground/78 sm:text-lg">
-                Classifyre turns messy, distributed source data into governed
-                signals. Connect the systems you already run, detect what
-                matters, classify content and findings, and label data for
-                security, privacy, moderation, and operational workflows.
-              </p>
-              <p className="max-w-2xl text-sm leading-6 text-primary-foreground/62">
-                Start with one Docker command to understand the workflow, move
-                to the open-source Helm chart for a production Kubernetes
-                cluster, and contact us when the rollout needs authorization,
-                governance, and SLA-backed support.
-              </p>
-            </div>
+                  <span className="block">Label.</span>
+                </h1>
+              </div>
 
-            <div className="flex flex-wrap gap-3">
-              <Button
-                asChild
-                className="border-2 border-accent bg-accent text-accent-foreground hover:bg-accent/90"
-              >
-                <a
-                  href="https://demo.classifyre.com/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Demo
-                </a>
-              </Button>
-              <Button
-                asChild
-                variant="secondary"
-                className="border-2 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/16"
-              >
-                <a
-                  href="https://docs.classifyre.com/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Read Docs
-                </a>
-              </Button>
-              <Button
-                asChild
-                variant="secondary"
-                className="border-2 border-primary-foreground/20 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
-              >
-                <Link href="/blog">Engineering Journal</Link>
-              </Button>
+              <div className="space-y-6 lg:flex-1">
+                <p className="max-w-2xl text-left text-base leading-7 text-primary-foreground/78 sm:text-lg lg:text-left">
+                  Classifyre turns messy, distributed source data into governed
+                  signals. Connect the systems you already run, detect what
+                  matters, classify content and findings, and label data for
+                  security, privacy, moderation, and operational workflows.
+                </p>
+
+                <div className="flex flex-wrap gap-3 lg:justify-start">
+                  <Button
+                    asChild
+                    className="border-2 border-accent bg-accent text-accent-foreground hover:bg-accent/90"
+                  >
+                    <a
+                      href="https://demo.classifyre.com/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Try Demo
+                    </a>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="border-2 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/16"
+                  >
+                    <a
+                      href="https://docs.classifyre.com/"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Get Started
+                    </a>
+                  </Button>
+                </div>
+              </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
@@ -360,81 +314,32 @@ export default async function HomePage() {
       </section>
 
       <section aria-labelledby="runtime-title">
-        <LandingSectionShell tone="plain">
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,0.72fr)_minmax(420px,1.28fr)] lg:items-start">
-            <div className="space-y-5">
-              <div className="space-y-3">
-                <Badge
-                  variant="secondary"
-                  className="rounded-[4px] border-2 border-border bg-accent px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-accent-foreground"
-                >
-                  Deployment Path
-                </Badge>
-                <div>
-                  <h2
-                    id="runtime-title"
-                    className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl"
-                  >
-                    Three ways to run Classifyre
-                  </h2>
-                </div>
-              </div>
-
-
-
-              {/*<div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">*/}
-              {/*  <div className="border-2 border-border bg-card p-4">*/}
-              {/*    <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">*/}
-              {/*      01 Evaluate*/}
-              {/*    </div>*/}
-              {/*    <p className="mt-2 text-sm leading-6 text-foreground">*/}
-              {/*      One Docker command. Best for testing and learning the*/}
-              {/*      product.*/}
-              {/*    </p>*/}
-              {/*  </div>*/}
-              {/*  <div className="border-2 border-border bg-card p-4">*/}
-              {/*    <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">*/}
-              {/*      02 Run in production*/}
-              {/*    </div>*/}
-              {/*    <p className="mt-2 text-sm leading-6 text-foreground">*/}
-              {/*      Helm install on your Kubernetes cluster with the open-source*/}
-              {/*      core.*/}
-              {/*    </p>*/}
-              {/*  </div>*/}
-              {/*  <div className="border-2 border-border bg-card p-4">*/}
-              {/*    <div className="font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">*/}
-              {/*      03 Add enterprise*/}
-              {/*    </div>*/}
-              {/*    <p className="mt-2 text-sm leading-6 text-foreground">*/}
-              {/*      Governance, rollout support, and platform extension for*/}
-              {/*      larger teams.*/}
-              {/*    </p>*/}
-              {/*  </div>*/}
-              {/*</div>*/}
-            </div>
-            <div>
-              <p className="mt-3 max-w-2xl text-muted-foreground">
-                Classifyre is open core. Start with the single-container
-                runtime to test the workflow, move to the Helm chart when
-                you are ready for a real cluster, and contact us when the
-                rollout needs enterprise controls and commercial support.
-              </p>
-            </div>
+        <LandingSectionShell tone="plain" fullWidth>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-start pb-10">
+            <h2
+              id="runtime-title"
+              className="font-serif text-4xl font-black uppercase leading-[0.9] sm:text-5xl tracking-wider"
+            >
+              From fast evaluation to enterprise rollout
+            </h2>
+            <p className="mt-3 max-w-2xl text-muted-foreground">
+              Start with the single-container runtime to test the workflow, move
+              to the Helm chart when you are ready for a real cluster, and
+              contact us when the rollout needs enterprise controls and
+              commercial support.
+            </p>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             <Card className="panel-card h-full rounded-[16px] border-2 bg-card">
               <CardHeader className="gap-4">
                 <div className="space-y-2">
-                  <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                    01 Evaluate
-                  </div>
                   <CardTitle className="text-2xl uppercase tracking-[0.04em]">
-                    Docker
+                    01 Evaluate
                   </CardTitle>
                   <CardDescription className="text-sm leading-6 text-muted-foreground">
-                    Bring up the full product locally in one command. Use it for
-                    testing, demos, and first-touch evaluation.
+                    Bring up the full product locally in one Docker command. Use
+                    it for testing, demos, and first-touch evaluation.
                   </CardDescription>
                 </div>
               </CardHeader>
@@ -458,7 +363,7 @@ export default async function HomePage() {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Docker docs
+                      All-in-One Docker docs
                     </a>
                   </Button>
                 </div>
@@ -468,15 +373,12 @@ export default async function HomePage() {
             <Card className="panel-card h-full rounded-[16px] border-2 bg-foreground text-primary-foreground">
               <CardHeader className="gap-4">
                 <div className="space-y-2">
-                  <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary-foreground/58">
-                    02 Run in production
-                  </div>
                   <CardTitle className="text-2xl uppercase tracking-[0.04em] text-primary-foreground">
-                    Kubernetes
+                    02 Run in production
                   </CardTitle>
                   <CardDescription className="text-sm leading-6 text-primary-foreground/72">
-                    Production-ready self-hosting with Helm on your own cluster.
-                    Same core product, no enterprise lock-in.
+                    Production-ready deployment to Kubernetes using Helm on your
+                    own cluster, whether self-hosted or in the cloud.
                   </CardDescription>
                 </div>
               </CardHeader>
@@ -497,7 +399,7 @@ export default async function HomePage() {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Kubernetes docs
+                      Helm chart docs
                     </a>
                   </Button>
                 </div>
@@ -507,11 +409,8 @@ export default async function HomePage() {
             <Card className="panel-card h-full rounded-[16px] border-2 bg-background">
               <CardHeader className="gap-4">
                 <div className="space-y-2">
-                  <div className="font-mono text-[11px] uppercase tracking-[0.16em] text-muted-foreground">
-                    03 Add enterprise
-                  </div>
                   <CardTitle className="text-2xl uppercase tracking-[0.04em]">
-                    Enterprise
+                    03 Add enterprise
                   </CardTitle>
                   <CardDescription className="text-sm leading-6 text-muted-foreground">
                     Turn the open-source core into a supported platform for
@@ -552,18 +451,11 @@ export default async function HomePage() {
         </LandingSectionShell>
       </section>
 
-
       <section aria-labelledby="sources-title">
         <LandingSectionShell tone="plain">
           <div className="space-y-6">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div className="space-y-3">
-                <Badge
-                  variant="secondary"
-                  className="rounded-[4px] border-2 border-border bg-accent px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-accent-foreground"
-                >
-                  Supported Sources
-                </Badge>
                 <div>
                   <h2
                     id="sources-title"
@@ -613,10 +505,7 @@ export default async function HomePage() {
               </div>
             </div>
 
-            <SourceCatalog
-              entries={searchableSourceEntries}
-              actionLabel="Docs"
-            />
+            <SourceCatalog entries={searchableSourceEntries} />
           </div>
         </LandingSectionShell>
       </section>
@@ -625,12 +514,6 @@ export default async function HomePage() {
         <LandingSectionShell tone="signal">
           <div className="space-y-6">
             <div className="space-y-3">
-              <Badge
-                variant="secondary"
-                className="rounded-[4px] border-2 border-border bg-accent px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-accent-foreground"
-              >
-                Detectors
-              </Badge>
               <div>
                 <h2
                   id="detectors-title"
@@ -640,8 +523,7 @@ export default async function HomePage() {
                 </h2>
                 <p className="mt-3 max-w-3xl text-primary-foreground/72">
                   Built-in detectors cover the risk, moderation, and governance
-                  paths teams need first. Every card below links straight to the
-                  canonical docs reference at https://docs.classifyre.com.
+                  paths teams need first.
                 </p>
               </div>
             </div>
@@ -732,124 +614,9 @@ export default async function HomePage() {
         </LandingSectionShell>
       </section>
       <section aria-labelledby="assistant-demo-title">
-        <LandingSectionShell tone="signal">
+        <LandingSectionShell tone="plain">
           <div className="space-y-6">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div className="space-y-3">
-                <Badge
-                    variant="secondary"
-                    className="rounded-[4px] border-2 border-border bg-accent px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-accent-foreground"
-                >
-                  Guided Setup Demo
-                </Badge>
-                <div>
-                  <h2
-                      id="assistant-demo-title"
-                      className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl"
-                  >
-                    Assistant
-                  </h2>
-                  <p className="mt-3 max-w-3xl text-primary-foreground/72">
-                    This is a static marketing walkthrough, not an interactive
-                    chat. The point is the workflow: a user states intent, the
-                    assistant drives real MCP-backed product steps, and setup
-                    keeps moving without forcing deep technical knowledge.
-                  </p>
-                </div>
-              </div>
-              <Button
-                  asChild
-                  variant="secondary"
-                  className="border-2 border-primary-foreground/20 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
-              >
-                <a
-                    href="https://demo.classifyre.com/"
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                  Open live demo
-                </a>
-              </Button>
-            </div>
-          </div>
-        </LandingSectionShell>
-      </section>
-
-
-      <section aria-labelledby="journal-title">
-        <LandingSectionShell tone="signal">
-          <div className="space-y-6">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div className="space-y-3">
-                <Badge
-                  variant="secondary"
-                  className="rounded-[4px] border-2 border-border bg-accent px-2 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-accent-foreground"
-                >
-                  Journal
-                </Badge>
-                <div>
-                  <h2
-                    id="journal-title"
-                    className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl"
-                  >
-                    Product notes and engineering detail
-                  </h2>
-                  <p className="mt-3 max-w-3xl text-primary-foreground/72">
-                    The blog still matters. It now sits behind the product
-                    story: deployment notes, system design tradeoffs, and
-                    engineering writing for teams operating Classifyre
-                    seriously.
-                  </p>
-                </div>
-              </div>
-              <Button
-                asChild
-                variant="secondary"
-                className="border-2 border-primary-foreground/20 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
-              >
-                <Link href="/blog">Browse all articles</Link>
-              </Button>
-            </div>
-
-            <div className="grid gap-5 lg:grid-cols-3">
-              {featuredPosts.map((post) => (
-                <Card
-                  key={post.route}
-                  className="panel-card rounded-[8px] bg-card/80"
-                >
-                  <CardHeader className="gap-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="inline-block h-2.5 w-2.5 bg-accent" />
-                      <span>{formatDate(post.date)}</span>
-                    </div>
-                    <CardTitle className="text-2xl leading-tight">
-                      {post.title}
-                    </CardTitle>
-                    <CardDescription>{post.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      {post.tags.slice(0, 2).map((tag) => (
-                        <Badge
-                          key={`${post.route}-${tag}`}
-                          variant="secondary"
-                          className="border border-border"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                    <Button
-                      asChild
-                      variant="secondary"
-                      className="w-full border-2 border-border"
-                    >
-                      <Link href={post.route}>Read article</Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <AssistantDemo />
           </div>
         </LandingSectionShell>
       </section>

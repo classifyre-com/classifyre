@@ -1,5 +1,5 @@
 import { Badge } from "./badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./card";
+import { Card, CardDescription, CardHeader, CardTitle } from "./card";
 
 export type DetectorReferenceGridItem = {
   detectorType: string;
@@ -14,22 +14,6 @@ export type DetectorReferenceGridItem = {
   };
 };
 
-function lifecycleBadgeStyle(status: string): string {
-  if (status === "active") {
-    return "border-green-500/40 text-green-600 dark:text-green-400";
-  }
-
-  if (status === "experimental") {
-    return "border-yellow-500/40 text-yellow-600 dark:text-yellow-400";
-  }
-
-  if (status === "deprecated") {
-    return "border-red-500/40 text-red-500";
-  }
-
-  return "";
-}
-
 export function DetectorReferenceGrid({
   detectors,
   hrefPrefix = "/detectors/",
@@ -41,61 +25,52 @@ export function DetectorReferenceGrid({
 }) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {detectors.map((detector) => (
-        <a
-          key={detector.detectorType}
-          href={`${hrefPrefix}${detector.slug}${hrefPrefix.endsWith("/") ? "" : "/"}`}
-          target={external ? "_blank" : undefined}
-          rel={external ? "noreferrer" : undefined}
-          className="group"
-        >
-          <Card className="panel-card h-full rounded-[8px] bg-card/80 transition-colors group-hover:bg-accent/10">
-            <CardHeader className="gap-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-2">
-                  <CardTitle className="text-xl uppercase tracking-[0.04em]">
-                    {detector.label}
-                  </CardTitle>
-                  <CardDescription>
-                    {detector.catalogMeta.notes ??
-                      "Schema-driven detector reference with examples and configuration details."}
-                  </CardDescription>
-                </div>
-                <Badge
-                  variant="outline"
-                  className={`shrink-0 text-[10px] uppercase ${lifecycleBadgeStyle(detector.catalogMeta.lifecycleStatus)}`}
-                >
-                  {detector.catalogMeta.lifecycleStatus}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {detector.catalogMeta.categories.map((category) => (
-                  <Badge
-                    key={`${detector.detectorType}-${category}`}
-                    variant="secondary"
-                    className="border border-border bg-background text-[10px] uppercase tracking-[0.12em]"
-                  >
-                    {category}
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                <span className="border border-border px-3 py-1">
-                  {detector.catalogMeta.supportedAssetTypes.join(", ")}
-                </span>
-                <span className="border border-border px-3 py-1">
-                  {detector.examples.length} examples
-                </span>
-              </div>
-              <div className="text-[11px] font-mono uppercase tracking-[0.14em] text-muted-foreground">
-                Open detector docs
-              </div>
-            </CardContent>
-          </Card>
-        </a>
-      ))}
+      {detectors
+        .filter((detector) => detector.detectorType !== "CUSTOM")
+        .map((detector) => {
+          const href = `${hrefPrefix}${detector.slug}${hrefPrefix.endsWith("/") ? "" : "/"}`;
+
+          return (
+            <a
+              key={detector.detectorType}
+              href={href}
+              target={external ? "_blank" : undefined}
+              rel={external ? "noreferrer" : undefined}
+              className="block h-full rounded-[6px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <Card
+                clickable
+                className="h-full"
+                data-testid={`detector-type-${detector.detectorType}`}
+              >
+                <CardHeader className="gap-4 px-4 py-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-2">
+                      <CardTitle>
+                        {detector.detectorType?.replaceAll("_", " ")}
+                      </CardTitle>
+                      <CardDescription className="max-w-xl text-sm leading-relaxed">
+                        {detector.catalogMeta.notes}
+                      </CardDescription>
+                    </div>
+
+                    <div className="flex flex-wrap justify-end gap-2">
+                      {detector.catalogMeta.categories.map((category) => (
+                        <Badge
+                          key={`${detector.detectorType}-${category}`}
+                          variant="secondary"
+                          className="rounded-lg border bg-background px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-foreground"
+                        >
+                          {category}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
+            </a>
+          );
+        })}
     </div>
   );
 }
