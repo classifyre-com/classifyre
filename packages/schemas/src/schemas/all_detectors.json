@@ -427,7 +427,7 @@
             "IMAGE"
           ],
           "recommended_model": null,
-          "notes": "Identifies violent or graphic imagery that may be unsafe or non-compliant."
+          "notes": "Identifies violent or graphic imagery that may be unsafe or non-compliant. Commercial rollout is deferred until a model with verified license terms is selected."
         },
         {
           "detector_type": "OCR_PII",
