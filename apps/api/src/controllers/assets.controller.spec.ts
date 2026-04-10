@@ -79,17 +79,18 @@ describe('SourceAssetsController', () => {
   });
 
   it('allows scheduler ingestion callbacks in demo mode', () => {
-    expect(
-      Reflect.getMetadata(
-        ALLOW_IN_DEMO_MODE_KEY,
-        SourceAssetsController.prototype.bulkIngest,
-      ),
-    ).toBe(true);
-    expect(
-      Reflect.getMetadata(
-        ALLOW_IN_DEMO_MODE_KEY,
-        SourceAssetsController.prototype.finalizeIngest,
-      ),
-    ).toBe(true);
+    const bulkIngest = Object.getOwnPropertyDescriptor(
+      SourceAssetsController.prototype,
+      'bulkIngest',
+    )?.value;
+    const finalizeIngest = Object.getOwnPropertyDescriptor(
+      SourceAssetsController.prototype,
+      'finalizeIngest',
+    )?.value;
+
+    expect(Reflect.getMetadata(ALLOW_IN_DEMO_MODE_KEY, bulkIngest)).toBe(true);
+    expect(Reflect.getMetadata(ALLOW_IN_DEMO_MODE_KEY, finalizeIngest)).toBe(
+      true,
+    );
   });
 });

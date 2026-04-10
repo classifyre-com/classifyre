@@ -4,7 +4,6 @@ import * as React from "react";
 
 import {
   AssistantWorkflowPanel,
-  Badge,
   type AssistantPanelMessage,
 } from "@workspace/ui/components";
 
@@ -36,7 +35,7 @@ const DEMO_STEPS: readonly DemoScriptStep[] = [
     message: {
       id: "demo-user-2",
       role: "user",
-      content: "Use \"snowflake-prod-finance\" and call it \"Finance Warehouse\".",
+      content: 'Use "snowflake-prod-finance" and call it "Finance Warehouse".',
     },
   },
   {
@@ -174,40 +173,9 @@ const DEMO_STEPS: readonly DemoScriptStep[] = [
   },
 ] as const;
 
-function getOperatingState(messageCount: number) {
-  if (messageCount >= DEMO_STEPS.length) {
-    return "Workflow package is staged and ready for creation.";
-  }
-  if (messageCount >= 12) {
-    return "Locking the schedule and incremental scan policy.";
-  }
-  if (messageCount >= 10) {
-    return "Designing the custom EU IBAN detector.";
-  }
-  if (messageCount >= 8) {
-    return "Adding the built-in PII detector pack.";
-  }
-  if (messageCount >= 6) {
-    return "Waiting on the operator's credential-handling choice.";
-  }
-  if (messageCount >= 4) {
-    return "Source identity is staged. Access path is being confirmed.";
-  }
-  if (messageCount >= 2) {
-    return "Collecting the source identifier and operator label.";
-  }
-  return "Listening for the onboarding request.";
-}
-
 export function AssistantDemo() {
-  const [playbackKey, setPlaybackKey] = React.useState(0);
   const [stepIndex, setStepIndex] = React.useState(0);
   const [messages, setMessages] = React.useState<AssistantPanelMessage[]>([]);
-
-  React.useEffect(() => {
-    setStepIndex(0);
-    setMessages([]);
-  }, [playbackKey]);
 
   React.useEffect(() => {
     if (stepIndex >= DEMO_STEPS.length) {
@@ -225,7 +193,7 @@ export function AssistantDemo() {
     }, step.delayMs);
 
     return () => window.clearTimeout(timeout);
-  }, [playbackKey, stepIndex]);
+  }, [stepIndex]);
 
   const isRunning = stepIndex < DEMO_STEPS.length;
 
