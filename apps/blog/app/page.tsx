@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -10,14 +11,14 @@ import {
   CardTitle,
   Checkbox,
   DetectorCatalog,
-  SourceCatalog,
-  SourceIcon,
   detectorCatalogGroups,
   resolveDetectorGroupId,
+  SourceCatalog,
+  SourceIcon,
 } from "@workspace/ui/components";
 import {
-  SOURCE_TYPE_CATALOG_META,
   resolveSourceCatalogMeta,
+  SOURCE_TYPE_CATALOG_META,
   type SourceCatalogEntry,
 } from "@workspace/ui/lib/source-catalog";
 import { softwareVersion } from "@workspace/ui/lib/software-version";
@@ -128,26 +129,6 @@ const assistantClientExamples = [
   "Windsurf",
   "Continue",
   "Custom MCP clients",
-] as const;
-
-const assistantChecklist = [
-  "Use the assistant inside the tools your team already prefers.",
-  "Keep proprietary hosted models or connect your own custom MCP-capable stack.",
-  "Give operators a real setup workflow instead of a generic AI chat.",
-  "Create one MCP token per workspace and control access cleanly.",
-] as const;
-
-const assistantConnectionBenefits = [
-  "Single HTTP MCP endpoint with bearer-token auth",
-  "Works across local workspaces, cloud environments, and internal tools",
-  "Lets the assistant create sources, manage custom detectors, inspect findings, and run workflows",
-  "Fits teams standardizing on one vendor and teams mixing multiple model clients",
-] as const;
-
-const assistantConnectionSteps = [
-  "Enable MCP in Classifyre settings.",
-  "Create a token once and copy it when issued.",
-  "Point your MCP-capable client at the `/mcp` endpoint.",
 ] as const;
 
 function Marker({ label }: { label: string }) {
@@ -305,23 +286,23 @@ export default function HomePage() {
       />
 
       <section>
-        <LandingSectionShell tone="signal" fullWidth>
+        <LandingSectionShell tone="signal" fullWidth className="bg-black">
           <div className="space-y-7">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:gap-12">
               <div className="space-y-5 lg:flex-1">
-                <h1 className="font-serif text-[clamp(3.9rem,9vw,6.8rem)] font-black uppercase leading-[0.84] tracking-[0.08em] text-primary-foreground">
-                  <span className="block">Detect.</span>
+                <h1 className="font-serif text-[clamp(3.9rem,9vw,6.8rem)] font-black uppercase leading-[0.84] tracking-[0.08em] text-white">
+                  <span className="block text-white">Detect.</span>
                   <span className="block">
-                    <span className="inline-block bg-accent px-[0.14em] text-accent-foreground dark:text-primary">
+                    <span className="inline-block bg-accent px-[0.14em] text-black">
                       Classify.
                     </span>
                   </span>
-                  <span className="block">Label.</span>
+                  <span className="block text-white">Label.</span>
                 </h1>
               </div>
 
               <div className="space-y-6 lg:flex-1">
-                <p className="max-w-2xl text-left text-base leading-7 text-primary-foreground/78 sm:text-lg lg:text-left">
+                <p className="max-w-2xl text-left text-base leading-7 text-white/78 sm:text-lg lg:text-left">
                   Classifyre turns messy, distributed source data into governed
                   signals. Connect the systems you already run, detect what
                   matters, classify content and findings, and label data for
@@ -331,7 +312,7 @@ export default function HomePage() {
                 <div className="flex flex-wrap gap-3 lg:justify-start">
                   <Button
                     asChild
-                    className="border-2 border-accent bg-accent text-accent-foreground hover:bg-accent/90"
+                    className="border-2 border-accent bg-accent text-black hover:bg-accent/90"
                   >
                     <a
                       href="https://demo.classifyre.com/"
@@ -344,7 +325,7 @@ export default function HomePage() {
                   <Button
                     asChild
                     variant="secondary"
-                    className="border-2 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/16"
+                    className="border-2 border-white/20 bg-white/10 text-white hover:bg-white/16"
                   >
                     <a
                       href="https://docs.classifyre.com/"
@@ -359,36 +340,36 @@ export default function HomePage() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="border border-primary-foreground/20 bg-primary-foreground/8 p-4">
-                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary-foreground/54">
+              <div className="border border-white/20 bg-white/8 p-4">
+                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/54">
                   Source Types
                 </p>
                 <p className="mt-2 text-3xl font-black text-accent">
                   {sourceEntries.length}+
                 </p>
-                <p className="mt-1 text-sm text-primary-foreground/68">
+                <p className="mt-1 text-sm text-white/68">
                   Databases, lakehouses, collaboration tools, BI, and web
                   content.
                 </p>
               </div>
-              <div className="border border-primary-foreground/20 bg-primary-foreground/8 p-4">
-                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary-foreground/54">
+              <div className="border border-white/20 bg-white/8 p-4">
+                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/54">
                   Detector Families
                 </p>
                 <p className="mt-2 text-3xl font-black text-accent">
                   {activeDetectorItems.length}
                 </p>
-                <p className="mt-1 text-sm text-primary-foreground/68">
+                <p className="mt-1 text-sm text-white/68">
                   From secrets and PII to moderation, quality, and governance
                   tags.
                 </p>
               </div>
-              <div className="border border-primary-foreground/20 bg-primary-foreground/8 p-4">
-                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary-foreground/54">
+              <div className="border border-white/20 bg-white/8 p-4">
+                <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-white/54">
                   Deployment Modes
                 </p>
                 <p className="mt-2 text-3xl font-black text-accent">1 → N</p>
-                <p className="mt-1 text-sm text-primary-foreground/68">
+                <p className="mt-1 text-sm text-white/68">
                   Docker evaluation, Kubernetes core, then enterprise.
                 </p>
               </div>
@@ -618,351 +599,95 @@ export default function HomePage() {
               groups={detectorCatalogGroups}
               external
             />
+          </div>
+        </LandingSectionShell>
+      </section>
+      <section>
+        <LandingSectionShell tone="plain">
+          <Card className="bg-background border-0 shadow-none">
+            <div className="absolute inset-x-0 bottom-0 h-24" />
+            <CardHeader className="relative flex flex-col gap-6 pb-5 md:flex-row md:items-start md:justify-between">
+              <div className="max-w-3xl space-y-4">
+                <CardTitle className="font-serif text-4xl font-black uppercase leading-[0.9] tracking-[0.06em] sm:text-5xl">
+                  Business glossary that actually runs
+                </CardTitle>
+                <CardDescription>
+                  Turn Classifyre into a tagging system built around your own
+                  language. Name the concepts that matter to revenue,
+                  operations, compliance, or support, then detect them across
+                  documents, tickets, chats, dashboards, and public content.
+                </CardDescription>
+              </div>
+              <Button asChild variant="secondary" className="w-full md:w-auto">
+                <a
+                  href="https://docs.classifyre.com/detectors/custom-detectors/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Custom detector docs
+                </a>
+              </Button>
+            </CardHeader>
+            <CardContent className="relative space-y-6">
+              <div className="flex flex-wrap gap-2">
+                {customDetectorGlossaryExamples.map((example) => (
+                  <Badge variant="default" key={example}>
+                    {example}
+                  </Badge>
+                ))}
+              </div>
 
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.85fr)]">
-              <Card className="panel-card relative overflow-hidden rounded-[18px] border-2 border-accent bg-accent text-accent-foreground">
-                <div className="absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.28),transparent_58%)] opacity-80" />
-                <div className="absolute inset-x-0 bottom-0 h-24 bg-[linear-gradient(180deg,transparent,rgba(0,0,0,0.08))]" />
-                <CardHeader className="relative gap-6 pb-5">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Marker label="TAGS" />
-                    <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-accent-foreground/72">
-                      Your glossary, your labels, your workflow
-                    </span>
-                  </div>
-                  <div className="max-w-3xl space-y-4">
-                    <CardTitle className="text-4xl uppercase tracking-[0.04em] sm:text-5xl">
-                      Build a business glossary that actually runs
-                    </CardTitle>
-                    <CardDescription className="max-w-2xl text-base leading-7 text-accent-foreground/82 sm:text-lg">
-                      Turn Classifyre into a tagging system built around your
-                      own language. Name the concepts that matter to revenue,
-                      operations, compliance, or support, then detect them
-                      across documents, tickets, chats, dashboards, and public
-                      content.
-                    </CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent className="relative space-y-6">
-                  <div className="flex flex-wrap gap-2">
-                    {customDetectorGlossaryExamples.map((example) => (
-                      <span
-                        key={example}
-                        className="border border-accent-foreground/25 bg-accent-foreground/10 px-3 py-2 text-[11px] font-mono uppercase tracking-[0.12em] text-accent-foreground backdrop-blur"
-                      >
-                        {example}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="grid gap-3 lg:grid-cols-3">
-                    {customDetectorMethods.map((method) => (
-                      <div
-                        key={method.method}
-                        className="border border-accent-foreground/22 bg-accent-foreground/8 p-4 backdrop-blur"
-                      >
-                        <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-accent-foreground/68">
-                          {method.method}
-                        </p>
-                        <p className="mt-3 text-lg font-semibold uppercase leading-tight tracking-[0.04em]">
-                          {method.title}
-                        </p>
-                        <p className="mt-3 text-sm leading-6 text-accent-foreground/80">
-                          {method.description}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(240px,0.85fr)]">
-                    <div className="border border-accent-foreground/22 bg-accent-foreground/8 p-4 backdrop-blur">
-                      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent-foreground/68">
-                        How teams use it
-                      </p>
-                      <ul className="mt-4 space-y-3 text-sm leading-6">
-                        {customDetectorWorkflow.map((step) => (
-                          <li key={step} className="flex items-start gap-3">
-                            <span className="mt-1.5 inline-block h-2.5 w-2.5 shrink-0 border border-current" />
-                            <span>{step}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    <div className="border border-accent-foreground/22 bg-foreground p-4 text-primary-foreground">
-                      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary-foreground/58">
-                        After a match
-                      </p>
-                      <p className="mt-3 text-sm leading-6 text-primary-foreground/78">
-                        Capture the fields downstream teams need for triage,
-                        routing, and reporting.
-                      </p>
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {customDetectorFieldExamples.map((field) => (
-                          <span
-                            key={field}
-                            className="border border-primary-foreground/16 bg-primary-foreground/8 px-3 py-2 text-[11px] font-mono uppercase tracking-[0.12em] text-primary-foreground"
-                          >
-                            {field}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="grid gap-5">
-                <Card className="panel-card rounded-[18px] border-2 bg-card/85">
-                  <CardHeader className="gap-4">
-                    <div className="flex items-center gap-3">
-                      <Marker label="TRAIN" />
-                      <div>
-                        <CardTitle className="text-3xl uppercase tracking-[0.04em]">
-                          Start fast, refine over time
-                        </CardTitle>
-                        <CardDescription>
-                          Launch with label definitions first, then harden the
-                          classifier with reviewed examples from real scans.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4 text-sm text-muted-foreground">
-                    <p>
-                      The custom detector flow supports immediate tagging for
-                      new categories and a training path for better domain fit
-                      as your team confirms findings.
+              <div className="grid gap-3 lg:grid-cols-3">
+                {customDetectorMethods.map((method) => (
+                  <Card key={method.method} className="p-4">
+                    <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-accent-foreground/68">
+                      {method.method}
                     </p>
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      <div className="border border-border bg-muted/30 p-3">
-                        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/60">
-                          01
-                        </p>
-                        <p className="mt-2 text-foreground">
-                          Define labels that match the business language.
-                        </p>
-                      </div>
-                      <div className="border border-border bg-muted/30 p-3">
-                        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/60">
-                          02
-                        </p>
-                        <p className="mt-2 text-foreground">
-                          Review findings and keep the good examples.
-                        </p>
-                      </div>
-                      <div className="border border-border bg-muted/30 p-3">
-                        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/60">
-                          03
-                        </p>
-                        <p className="mt-2 text-foreground">
-                          Train the detector so it fits your domain better.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
+                    <CardTitle>{method.title}</CardTitle>
+                    <CardDescription>{method.description}</CardDescription>
+                  </Card>
+                ))}
+              </div>
+
+              <div className="grid gap-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(240px,0.85fr)]">
+                <Card className="p-4 bg-background">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent-foreground/68">
+                    How teams use it
+                  </p>
+                  <ul className="mt-4 space-y-3 text-sm leading-6">
+                    {customDetectorWorkflow.map((step) => (
+                      <li key={step} className="flex items-start gap-3">
+                        <span className="mt-1.5 inline-block h-2.5 w-2.5 shrink-0 border border-current" />
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </Card>
 
-                <Card className="panel-card rounded-[18px] border-2 bg-foreground text-primary-foreground">
-                  <CardHeader className="gap-4">
-                    <div className="flex items-center gap-3">
-                      <Marker label="OPS" />
-                      <div>
-                        <CardTitle className="text-3xl uppercase tracking-[0.04em] text-primary-foreground">
-                          More than a flag
-                        </CardTitle>
-                        <CardDescription className="text-primary-foreground/72">
-                          Route findings with business-ready context instead of
-                          generic alerts.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4 text-sm text-primary-foreground/78">
-                    <p>
-                      Matches can become tags, extracted fields, and routing
-                      metadata that feed moderation queues, compliance reviews,
-                      vendor workflows, support escalation, or reporting.
-                    </p>
-                    <Button
-                      asChild
-                      variant="secondary"
-                      className="w-full border-2 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/16"
-                    >
-                      <a
-                        href="https://docs.classifyre.com/detectors/custom-detectors/"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Custom detector docs
-                      </a>
-                    </Button>
-                  </CardContent>
+                <Card className="bg-foreground p-4 text-primary-foreground">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary-foreground/58">
+                    After a match
+                  </p>
+                  <p className="mt-3 text-sm leading-6 text-primary-foreground/78">
+                    Capture the fields downstream teams need for triage,
+                    routing, and reporting.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {customDetectorFieldExamples.map((field) => (
+                      <Badge variant="secondary" key={field}>
+                        {field}
+                      </Badge>
+                    ))}
+                  </div>
                 </Card>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </LandingSectionShell>
       </section>
       <section aria-labelledby="assistant-demo-title">
         <LandingSectionShell tone="plain">
           <div className="space-y-6">
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-              <Card className="panel-card relative overflow-hidden rounded-[20px] border-2 border-foreground bg-foreground text-primary-foreground">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.14),transparent_42%),linear-gradient(135deg,transparent,rgba(255,255,255,0.05))]" />
-                <CardHeader className="relative gap-5">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Marker label="MCP" />
-                    <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-primary-foreground/58">
-                      Assistant connectivity
-                    </span>
-                  </div>
-                  <div className="max-w-3xl space-y-4">
-                    <CardTitle
-                      id="assistant-demo-title"
-                      className="text-4xl uppercase tracking-[0.04em] text-primary-foreground sm:text-5xl"
-                    >
-                      Bring the assistant to the models you already use
-                    </CardTitle>
-                    <CardDescription className="max-w-2xl text-base leading-7 text-primary-foreground/78 sm:text-lg">
-                      Classifyre exposes an MCP server over HTTP, so the
-                      assistant can plug into the clients your team already
-                      runs. That means vendor-hosted AI tools, coding agents,
-                      and custom internal clients can all operate the same setup
-                      flow through one connection pattern.
-                    </CardDescription>
-                  </div>
-                </CardHeader>
-                <CardContent className="relative grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.72fr)]">
-                  <div className="space-y-4">
-                    {assistantChecklist.map((item) => (
-                      <label
-                        key={item}
-                        className="flex items-start gap-3 text-sm leading-6 text-primary-foreground"
-                      >
-                        <Checkbox
-                          checked
-                          tabIndex={-1}
-                          aria-readonly="true"
-                          className="pointer-events-none mt-1 border-primary-foreground/30 data-[state=checked]:border-accent data-[state=checked]:bg-accent data-[state=checked]:text-accent-foreground"
-                        />
-                        <span>{item}</span>
-                      </label>
-                    ))}
-                  </div>
-
-                  <div className="border border-primary-foreground/16 bg-primary-foreground/8 p-4 backdrop-blur">
-                    <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary-foreground/58">
-                      Connection pattern
-                    </p>
-                    <div className="mt-4 space-y-3">
-                      {assistantConnectionSteps.map((step, index) => (
-                        <div
-                          key={step}
-                          className="border border-primary-foreground/12 bg-primary-foreground/6 p-3"
-                        >
-                          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-primary-foreground/48">
-                            0{index + 1}
-                          </p>
-                          <p className="mt-2 text-sm leading-6 text-primary-foreground/80">
-                            {step}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4 border border-primary-foreground/12 bg-background/95 p-3 text-foreground">
-                      <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-foreground/60">
-                        Endpoint
-                      </p>
-                      <p className="mt-2 font-mono text-xs leading-6 sm:text-sm">
-                        https://&lt;your-host&gt;/mcp
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <div className="grid gap-5">
-                <Card className="panel-card rounded-[20px] border-2 bg-accent text-accent-foreground">
-                  <CardHeader className="gap-4">
-                    <div className="flex items-center gap-3">
-                      <Marker label="USE" />
-                      <div>
-                        <CardTitle className="text-3xl uppercase tracking-[0.04em]">
-                          Works with the stack you have
-                        </CardTitle>
-                        <CardDescription className="text-accent-foreground/78">
-                          Documented client setups cover both off-the-shelf
-                          tools and custom MCP consumers.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      {assistantClientExamples.map((client) => (
-                        <span
-                          key={client}
-                          className="border border-accent-foreground/18 bg-accent-foreground/8 px-3 py-2 text-[11px] font-mono uppercase tracking-[0.12em]"
-                        >
-                          {client}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-sm leading-6 text-accent-foreground/82">
-                      The docs explicitly cover Claude, Codex CLI, Gemini CLI,
-                      Cursor, Windsurf, VS Code, Continue, and custom clients.
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card className="panel-card rounded-[20px] border-2 bg-card">
-                  <CardHeader className="gap-4">
-                    <div className="flex items-center gap-3">
-                      <Marker label="WHY" />
-                      <div>
-                        <CardTitle className="text-3xl uppercase tracking-[0.04em]">
-                          Why teams adopt it
-                        </CardTitle>
-                        <CardDescription>
-                          The assistant becomes an operational surface, not just
-                          another chatbot tab.
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {assistantConnectionBenefits.map((benefit) => (
-                      <label
-                        key={benefit}
-                        className="flex items-start gap-3 text-sm leading-6 text-foreground"
-                      >
-                        <Checkbox
-                          checked
-                          tabIndex={-1}
-                          aria-readonly="true"
-                          className="pointer-events-none mt-1"
-                        />
-                        <span>{benefit}</span>
-                      </label>
-                    ))}
-                    <Button
-                      asChild
-                      className="w-full border-2 border-accent bg-accent text-accent-foreground hover:bg-accent/90"
-                    >
-                      <a
-                        href="https://docs.classifyre.com/mcp-server/"
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        MCP server docs
-                      </a>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-
             <AssistantDemo />
           </div>
         </LandingSectionShell>

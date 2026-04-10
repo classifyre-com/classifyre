@@ -60,7 +60,7 @@ function DetectorCatalogCard({
               </div>
             </div>
             {item.priority ? (
-              <Badge className="rounded-[4px] border border-black bg-[#b7ff00] text-[10px] uppercase tracking-[0.12em] text-black">
+              <Badge>
                 {item.priority}
               </Badge>
             ) : null}
@@ -83,14 +83,6 @@ function DetectorCatalogCard({
               {category}
             </Badge>
           ))}
-          {item.lifecycleStatus ? (
-            <Badge
-              variant="outline"
-              className="rounded-[4px] border border-border text-[10px] uppercase tracking-[0.12em]"
-            >
-              {item.lifecycleStatus}
-            </Badge>
-          ) : null}
         </div>
       </div>
     </Card>
@@ -206,7 +198,7 @@ export function DetectorCatalog({
                       </p>
                     ) : null}
                   </div>
-                  <Badge className="w-fit rounded-[4px] border-2 border-black bg-[#b7ff00] text-[10px] uppercase tracking-[0.16em] text-black shadow-[3px_3px_0_#000]">
+                  <Badge>
                     {group.items.length} Detectors
                   </Badge>
                 </div>
