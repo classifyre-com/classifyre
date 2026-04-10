@@ -4,25 +4,25 @@ import { Button } from "@workspace/ui/components/button";
 import { cn } from "@workspace/ui/lib/utils";
 import { aiAccentBase, aiAccentHoverYellow } from "@/lib/ai-styles";
 
-interface StepItem {
-  id: string;
+interface StepItem<TStepId extends string = string> {
+  id: TStepId;
   title: string;
   description: string;
 }
 
-interface StepperHeaderProps {
-  steps: StepItem[];
+interface StepperHeaderProps<TStepId extends string> {
+  steps: StepItem<TStepId>[];
   currentIndex: number;
   canNavigateToDetectors: boolean;
-  onNavigate: (stepId: string) => void;
+  onNavigate: (stepId: TStepId) => void;
 }
 
-export function StepperHeader({
+export function StepperHeader<TStepId extends string>({
   steps,
   currentIndex,
   canNavigateToDetectors,
   onNavigate,
-}: StepperHeaderProps) {
+}: StepperHeaderProps<TStepId>) {
   return (
     <ol className="grid gap-3 md:grid-cols-2">
       {steps.map((step, index) => {
