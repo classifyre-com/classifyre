@@ -154,8 +154,235 @@ class DetectorCatalog(RootModel[list[DetectorCatalogEntry]]):
     """
 
     root: list[DetectorCatalogEntry] = Field(
-        ...,
+        [
+            {
+                'detector_type': 'SECRETS',
+                'lifecycle_status': 'active',
+                'priority': 'P0',
+                'categories': ['SECURITY', 'COMPLIANCE'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'detect-secrets',
+                'notes': 'Detects confidential credentials like API keys, tokens, or passwords that could lead to security breaches.',
+            },
+            {
+                'detector_type': 'PII',
+                'lifecycle_status': 'active',
+                'priority': 'P0',
+                'categories': ['PRIVACY', 'COMPLIANCE'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'presidio-analyzer',
+                'notes': 'Identifies personal data (e.g., names, emails, IDs) that must be protected for privacy and compliance.',
+            },
+            {
+                'detector_type': 'TOXIC',
+                'lifecycle_status': 'active',
+                'priority': 'P1',
+                'categories': ['CONTENT'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'detoxify',
+                'notes': 'Flags harmful or abusive language that could damage user experience or brand reputation.',
+            },
+            {
+                'detector_type': 'NSFW',
+                'lifecycle_status': 'active',
+                'priority': 'P1',
+                'categories': ['CONTENT'],
+                'supported_asset_types': ['IMAGE'],
+                'recommended_model': 'nudenet',
+                'notes': 'Detects inappropriate or explicit content not suitable for workplace or general audiences.',
+            },
+            {
+                'detector_type': 'YARA',
+                'lifecycle_status': 'active',
+                'priority': 'P1',
+                'categories': ['THREAT', 'SECURITY'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL', 'BINARY'],
+                'recommended_model': 'yara-python',
+                'notes': 'Uses security rules to identify known malware patterns or suspicious file content.',
+            },
+            {
+                'detector_type': 'BROKEN_LINKS',
+                'lifecycle_status': 'active',
+                'priority': 'P2',
+                'categories': ['QUALITY'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'HTTP validation engine',
+                'notes': 'Finds non-working or invalid links that reduce content quality and user trust.',
+            },
+            {
+                'detector_type': 'PROMPT_INJECTION',
+                'lifecycle_status': 'active',
+                'priority': 'P0',
+                'categories': ['SECURITY'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'protectai/deberta-v3-base-prompt-injection-v2',
+                'notes': 'Detects attempts to manipulate AI systems with malicious or hidden instructions.',
+            },
+            {
+                'detector_type': 'PHISHING_URL',
+                'lifecycle_status': 'active',
+                'priority': 'P2',
+                'categories': ['THREAT', 'SECURITY'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'CrabInHoney/urlbert-tiny-phishing-classifier',
+                'notes': 'Identifies suspicious links designed to steal credentials or sensitive information.',
+            },
+            {
+                'detector_type': 'SPAM',
+                'lifecycle_status': 'active',
+                'priority': 'P2',
+                'categories': ['QUALITY'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'mrm8488/bert-tiny-finetuned-sms-spam-detection',
+                'notes': 'Flags low-quality or irrelevant bulk content often used for unsolicited promotion.',
+            },
+            {
+                'detector_type': 'LANGUAGE',
+                'lifecycle_status': 'active',
+                'priority': 'P2',
+                'categories': ['QUALITY'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'fast-langdetect',
+                'notes': 'Detects the language of the content to support localization and processing rules.',
+            },
+            {
+                'detector_type': 'CODE_SECURITY',
+                'lifecycle_status': 'active',
+                'priority': 'P3',
+                'categories': ['SECURITY', 'THREAT'],
+                'supported_asset_types': ['TXT', 'TABLE', 'OTHER'],
+                'recommended_model': 'bandit',
+                'notes': 'Identifies vulnerabilities or insecure patterns in source code (e.g., hardcoded secrets).',
+            },
+            {
+                'detector_type': 'PLAGIARISM',
+                'lifecycle_status': 'planned',
+                'priority': 'P4',
+                'categories': ['QUALITY', 'COMPLIANCE'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL', 'OTHER'],
+                'recommended_model': 'datasketch + all-MiniLM-L6-v2',
+                'notes': 'Detects copied or unoriginal content that may violate intellectual property rules.',
+            },
+            {
+                'detector_type': 'IMAGE_VIOLENCE',
+                'lifecycle_status': 'experimental',
+                'priority': 'P4',
+                'categories': ['CONTENT'],
+                'supported_asset_types': ['IMAGE'],
+                'recommended_model': None,
+                'notes': 'Identifies violent or graphic imagery that may be unsafe or non-compliant. Commercial rollout is deferred until a model with verified license terms is selected.',
+            },
+            {
+                'detector_type': 'OCR_PII',
+                'lifecycle_status': 'planned',
+                'priority': 'P4',
+                'categories': ['PRIVACY', 'COMPLIANCE'],
+                'supported_asset_types': ['IMAGE'],
+                'recommended_model': 'tesseract + presidio-analyzer',
+                'notes': 'Extracts and detects personal data from images or scanned documents using OCR.',
+            },
+            {
+                'detector_type': 'DEID_SCORE',
+                'lifecycle_status': 'planned',
+                'priority': 'P0',
+                'categories': ['PRIVACY', 'COMPLIANCE'],
+                'supported_asset_types': ['TXT', 'TABLE'],
+                'recommended_model': 'presidio-analyzer + pycanon + scrubadub',
+                'notes': 'Measures how well sensitive data has been anonymized or removed from content.',
+            },
+            {
+                'detector_type': 'HATE_SPEECH',
+                'lifecycle_status': 'planned',
+                'priority': 'P2',
+                'categories': ['CONTENT', 'COMPLIANCE'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'facebook/roberta-hate-speech-dynabench-r4-target',
+                'notes': 'Flags content that promotes discrimination or hatred toward individuals or groups.',
+            },
+            {
+                'detector_type': 'AI_GENERATED',
+                'lifecycle_status': 'planned',
+                'priority': 'P1',
+                'categories': ['CONTENT', 'COMPLIANCE'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'distilbert-base-uncased (RAID fine-tuned)',
+                'notes': 'Estimates whether content was generated by AI rather than a human (probabilistic).',
+            },
+            {
+                'detector_type': 'CONTENT_QUALITY',
+                'lifecycle_status': 'planned',
+                'priority': 'P2',
+                'categories': ['QUALITY'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'sentence-transformers/all-MiniLM-L6-v2 + textstat',
+                'notes': 'Evaluates clarity, usefulness, and overall quality of content for end users.',
+            },
+            {
+                'detector_type': 'BIAS',
+                'lifecycle_status': 'active',
+                'priority': 'P2',
+                'categories': ['FAIRNESS', 'CONTENT'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'valurank/distilroberta-bias',
+                'notes': 'Detects potential bias or unfair language that could lead to ethical or reputational risks.',
+            },
+            {
+                'detector_type': 'DUPLICATE',
+                'lifecycle_status': 'planned',
+                'priority': 'P2',
+                'categories': ['QUALITY'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'datasketch (MinHash LSH)',
+                'notes': 'Identifies repeated or highly similar content across documents or datasets.',
+            },
+            {
+                'detector_type': 'DOMAIN_CLASS',
+                'lifecycle_status': 'planned',
+                'priority': 'P2',
+                'categories': ['CLASSIFICATION'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'typeform/distilbert-base-uncased-mnli',
+                'notes': 'Classifies content into business domains (e.g., finance, legal, healthcare).',
+            },
+            {
+                'detector_type': 'CONTENT_TYPE',
+                'lifecycle_status': 'planned',
+                'priority': 'P3',
+                'categories': ['CLASSIFICATION'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'typeform/distilbert-base-uncased-mnli',
+                'notes': 'Identifies the format or type of content (e.g., email, contract, code, image).',
+            },
+            {
+                'detector_type': 'SENSITIVITY_TIER',
+                'lifecycle_status': 'planned',
+                'priority': 'P2',
+                'categories': ['CLASSIFICATION', 'COMPLIANCE'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'typeform/distilbert-base-uncased-mnli',
+                'notes': 'Assigns a sensitivity level (e.g., public, internal, confidential, restricted).',
+            },
+            {
+                'detector_type': 'JURISDICTION_TAG',
+                'lifecycle_status': 'planned',
+                'priority': 'P3',
+                'categories': ['CLASSIFICATION', 'COMPLIANCE'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL'],
+                'recommended_model': 'fast-langdetect + rules engine',
+                'notes': 'Tags content with relevant legal or geographic context (e.g., GDPR, US, EU).',
+            },
+            {
+                'detector_type': 'CUSTOM',
+                'lifecycle_status': 'active',
+                'priority': 'P0',
+                'categories': ['CLASSIFICATION', 'COMPLIANCE'],
+                'supported_asset_types': ['TXT', 'TABLE', 'URL', 'IMAGE'],
+                'recommended_model': 'mDeBERTa-v3 + SetFit + GLiNER',
+                'notes': 'User-defined rules tailored to specific business needs or internal policies.',
+            },
+        ],
         description='Detector capability catalog used for planning and runtime routing',
+        validate_default=True,
     )
 
 
@@ -447,8 +674,8 @@ class Aggregate(StrEnum):
     first = 'first'
     last = 'last'
     list = 'list'
-    join_ = 'join'
-    count_ = 'count'
+    join = 'join'
+    count = 'count'
 
 
 class CustomExtractorField(BaseModel):
@@ -511,8 +738,8 @@ class CustomRulesetConfig(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    regex_rules: list[CustomRegexRule] | None = Field(default_factory=list)
-    keyword_rules: list[CustomKeywordRule] | None = Field(default_factory=list)
+    regex_rules: list[CustomRegexRule] | None = Field([], validate_default=True)
+    keyword_rules: list[CustomKeywordRule] | None = Field([], validate_default=True)
 
 
 class CustomClassifierLabel(BaseModel):
@@ -540,11 +767,11 @@ class CustomClassifierConfig(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
     )
-    labels: list[CustomClassifierLabel] | None = Field(default_factory=list)
+    labels: list[CustomClassifierLabel] | None = Field([], validate_default=True)
     zero_shot_model: str | None = 'MoritzLaurer/mDeBERTa-v3-base-mnli-xnli'
     hypothesis_template: str | None = 'This text contains {}.'
     training_examples: list[CustomClassifierTrainingExample] | None = Field(
-        default_factory=list
+        [], validate_default=True
     )
     min_examples_per_label: int | None = Field(8, ge=1)
     setfit_model: str | None = (
