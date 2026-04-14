@@ -1,45 +1,20 @@
 "use client";
 
-import { defineStepper } from "@stepperize/react";
-import { useTranslation } from "@/hooks/use-translation";
 import { cn } from "@workspace/ui/lib/utils";
 
-export const sandboxStepper = defineStepper(
-  {
-    id: "upload",
-    title: "sandbox.uploadFiles",
-    description: "sandbox.uploadFilesDesc",
-  },
-  {
-    id: "detectors",
-    title: "sandbox.detectors",
-    description: "sandbox.detectorsDesc",
-  },
-);
+export type CustomDetectorStepId = "method" | "policy" | "tests";
 
-export type SandboxStepId = "upload" | "detectors";
+type StepItem = {
+  id: CustomDetectorStepId;
+  title: string;
+  description: string;
+};
 
-interface SandboxStepperNavProps {
-  activeStepId: SandboxStepId;
-  canNavigateToDetectors: boolean;
-  onNavigate: (id: SandboxStepId) => void;
-}
-
-function useSteps() {
-  const { t } = useTranslation();
-  return [
-    {
-      id: "upload" as SandboxStepId,
-      title: t("sandbox.uploadFiles"),
-      description: t("sandbox.uploadFilesDesc"),
-    },
-    {
-      id: "detectors" as SandboxStepId,
-      title: t("sandbox.detectors"),
-      description: t("sandbox.detectorsDesc"),
-    },
-  ];
-}
+type CustomDetectorStepperNavProps = {
+  steps: StepItem[];
+  activeStepId: CustomDetectorStepId;
+  onNavigate: (id: CustomDetectorStepId) => void;
+};
 
 function StepIndicator({
   status,
@@ -65,23 +40,20 @@ function StepIndicator({
   );
 }
 
-export function VerticalSandboxStepperNav({
+export function VerticalCustomDetectorStepperNav({
+  steps,
   activeStepId,
-  canNavigateToDetectors,
   onNavigate,
-}: SandboxStepperNavProps) {
-  const steps = useSteps();
-  const activeIndex = steps.findIndex((s) => s.id === activeStepId);
+}: CustomDetectorStepperNavProps) {
+  const activeIndex = steps.findIndex((step) => step.id === activeStepId);
 
   return (
-    <nav aria-label="Sandbox steps">
+    <nav aria-label="Detector setup steps">
       <ol>
         {steps.map((step, index) => {
           const isActive = step.id === activeStepId;
           const isComplete = index < activeIndex;
           const isLast = index === steps.length - 1;
-          const canNavigate =
-            step.id === "detectors" ? canNavigateToDetectors : true;
           const status = isComplete ? "done" : isActive ? "active" : "upcoming";
 
           return (
@@ -91,9 +63,8 @@ export function VerticalSandboxStepperNav({
                   type="button"
                   tabIndex={-1}
                   aria-hidden="true"
-                  disabled={!canNavigate}
-                  onClick={() => canNavigate && onNavigate(step.id)}
-                  className="mt-2 disabled:cursor-not-allowed"
+                  onClick={() => onNavigate(step.id)}
+                  className="mt-2"
                 >
                   <StepIndicator
                     status={status}
@@ -112,22 +83,18 @@ export function VerticalSandboxStepperNav({
 
               <button
                 type="button"
-                disabled={!canNavigate}
                 onClick={() => onNavigate(step.id)}
                 className={cn(
                   "group mb-1 flex-1 rounded-[4px] px-2 py-2 text-left transition-colors",
                   !isLast && "pb-6",
-                  canNavigate && !isActive && "hover:bg-accent/10",
-                  !canNavigate && "cursor-not-allowed opacity-50",
+                  !isActive && "hover:bg-accent/10",
                 )}
               >
                 <span
                   className={cn(
                     "block text-[11px] font-semibold uppercase leading-tight tracking-[0.04em] transition-colors",
                     isActive ? "text-foreground" : "text-muted-foreground",
-                    canNavigate &&
-                      !isActive &&
-                      "group-hover:text-foreground",
+                    !isActive && "group-hover:text-foreground",
                   )}
                 >
                   {step.title}
@@ -144,35 +111,30 @@ export function VerticalSandboxStepperNav({
   );
 }
 
-export function HorizontalSandboxStepperNav({
+export function HorizontalCustomDetectorStepperNav({
+  steps,
   activeStepId,
-  canNavigateToDetectors,
   onNavigate,
-}: SandboxStepperNavProps) {
-  const steps = useSteps();
-  const activeIndex = steps.findIndex((s) => s.id === activeStepId);
+}: CustomDetectorStepperNavProps) {
+  const activeIndex = steps.findIndex((step) => step.id === activeStepId);
 
   return (
-    <nav aria-label="Sandbox steps">
+    <nav aria-label="Detector setup steps">
       <ol className="flex items-center gap-2">
         {steps.map((step, index) => {
           const isActive = step.id === activeStepId;
           const isComplete = index < activeIndex;
           const isLast = index === steps.length - 1;
-          const canNavigate =
-            step.id === "detectors" ? canNavigateToDetectors : true;
           const status = isComplete ? "done" : isActive ? "active" : "upcoming";
 
           return (
             <li key={step.id} className="flex min-w-0 flex-1 items-center gap-2">
               <button
                 type="button"
-                disabled={!canNavigate}
                 onClick={() => onNavigate(step.id)}
                 className={cn(
                   "flex min-w-0 flex-1 items-center gap-2 rounded-[4px] px-2 py-1.5 text-left transition-colors",
-                  canNavigate && !isActive && "hover:bg-accent/10",
-                  !canNavigate && "cursor-not-allowed opacity-50",
+                  !isActive && "hover:bg-accent/10",
                 )}
               >
                 <StepIndicator
