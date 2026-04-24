@@ -1,5 +1,5 @@
 
-# RunnerLogEntryDto
+# SearchRunnerLogsBodyDto
 
 
 ## Properties
@@ -7,24 +7,26 @@
 Name | Type
 ------------ | -------------
 `cursor` | string
-`timestamp` | string
-`stream` | string
-`message` | string
-`level` | string
+`take` | number
+`search` | string
+`levels` | Array&lt;string&gt;
+`sortOrder` | string
+`streams` | Array&lt;string&gt;
 
 ## Example
 
 ```typescript
-import type { RunnerLogEntryDto } from '@workspace/api-client'
+import type { SearchRunnerLogsBodyDto } from '@workspace/api-client'
 
 // TODO: Update the object below with actual values
 const example = {
   "cursor": null,
-  "timestamp": null,
-  "stream": null,
-  "message": null,
-  "level": null,
-} satisfies RunnerLogEntryDto
+  "take": null,
+  "search": null,
+  "levels": null,
+  "sortOrder": null,
+  "streams": null,
+} satisfies SearchRunnerLogsBodyDto
 
 console.log(example)
 
@@ -33,7 +35,7 @@ const exampleJSON: string = JSON.stringify(example)
 console.log(exampleJSON)
 
 // Parse the JSON string back to an object
-const exampleParsed = JSON.parse(exampleJSON) as RunnerLogEntryDto
+const exampleParsed = JSON.parse(exampleJSON) as SearchRunnerLogsBodyDto
 console.log(exampleParsed)
 ```
 
