@@ -1,11 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { useTranslation } from "@/hooks/use-translation";
 import Editor from "@monaco-editor/react";
 import {
   useForm,
-  useFieldArray,
   type Control,
   type FieldPath,
   type FieldValues,
@@ -57,7 +55,6 @@ import {
   getSourceSectionKnowledge,
 } from "@/lib/assistant-knowledge";
 import { collectMissingRequiredFields } from "@/lib/assistant-form-utils";
-import type { TranslationKey } from "@/i18n";
 import {
   isIngestionSourceType,
   type IngestionSourceType,
@@ -94,14 +91,9 @@ function flattenFormErrors(
   });
 }
 
-function formatPlaceholder(
-  name: string,
-  schema: JSONSchema7,
-  t: (key: TranslationKey, params?: Record<string, string | number>) => string,
-): string {
+function formatPlaceholder(name: string, schema: JSONSchema7): string {
   return (
-    schema.description ||
-    t("forms.enterValue") + " " + formatLabel(name, schema).toLowerCase()
+    schema.description || `Enter ${formatLabel(name, schema).toLowerCase()}`
   );
 }
 
@@ -743,7 +735,6 @@ function OneOfFieldInner({
   forceMasked: boolean;
   autoDetectSensitiveFields: boolean;
 }) {
-  const { t } = useTranslation();
   const oneOfOptions = React.useMemo(
     () => (normalizedSchema.oneOf || []) as JSONSchema7[],
     [normalizedSchema.oneOf],
@@ -817,11 +808,11 @@ function OneOfFieldInner({
         >
           <FormControl>
             <SelectTrigger data-testid={`select-${String(label).toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
-              <SelectValue placeholder={t("common.selectOption")} />
+              <SelectValue placeholder="Select option" />
             </SelectTrigger>
           </FormControl>
           <SelectContent>
-            {!required && <SelectItem value="__none__">{t("common.notSet")}</SelectItem>}
+            {!required && <SelectItem value="__none__">Not set</SelectItem>}
             {oneOfOptions.map((option, idx) => {
               const opt = option as JSONSchema7;
               const optionValue = getOneOfOptionIdentity(opt, idx);
@@ -880,7 +871,6 @@ function ObjectJsonEditorControl({
   hideLabel: boolean;
   disabled: boolean;
 }) {
-  const { t } = useTranslation();
   const serializedFieldValue = React.useMemo(
     () => formatJsonObjectValue(schema, value),
     [schema, value],
@@ -903,7 +893,7 @@ function ObjectJsonEditorControl({
 
     if (rawValue.trim() === "") {
       lastSyncedValueRef.current = "";
-      setParseError(required ? t("forms.enterValue") : null);
+      setParseError(required ? "Enter a JSON object." : null);
       onChange(undefined);
       return;
     }
@@ -912,7 +902,7 @@ function ObjectJsonEditorControl({
       const parsed = JSON.parse(rawValue);
 
       if (!isPlainObject(parsed)) {
-        setParseError(t("validation.configValidationFailed"));
+        setParseError("Value must be a JSON object.");
         onChange(undefined);
         return;
       }
@@ -921,7 +911,7 @@ function ObjectJsonEditorControl({
       setParseError(null);
       onChange(parsed);
     } catch {
-      setParseError(t("validation.configValidationFailed"));
+      setParseError("Enter valid JSON.");
       onChange(undefined);
     }
   };
@@ -1035,7 +1025,6 @@ function SchemaObjectFields({
   forceMasked?: boolean;
   autoDetectSensitiveFields?: boolean;
 }) {
-  const { t } = useTranslation();
   const properties = schema.properties || {};
   const required = new Set(schema.required || []);
   const entries = Object.entries(properties).filter(
@@ -1045,7 +1034,7 @@ function SchemaObjectFields({
   if (entries.length === 0) {
     return (
       <div className="text-sm text-muted-foreground">
-        {t("sources.detail.noRequiredDetails")}
+        No configurable fields available.
       </div>
     );
   }
@@ -1074,91 +1063,6 @@ function SchemaObjectFields({
   );
 }
 
-function ComplexObjectArrayField({
-  control,
-  fieldName,
-  fieldPath,
-  itemsSchema,
-  label,
-  required,
-  hideLabel,
-  disabled,
-  forceMasked,
-  autoDetectSensitiveFields,
-}: {
-  control: Control<FieldValues>;
-  fieldName: FieldPath<FieldValues>;
-  fieldPath: string;
-  itemsSchema: JSONSchema7;
-  label: string;
-  required: boolean;
-  hideLabel: boolean;
-  disabled: boolean;
-  forceMasked: boolean;
-  autoDetectSensitiveFields: boolean;
-}) {
-  const { t } = useTranslation();
-  const { fields, append, remove } = useFieldArray({ control, name: fieldName });
-
-  return (
-    <FormItem>
-      {!hideLabel && (
-        <FormLabel className="capitalize">
-          {label}
-          {required && <span className="text-destructive"> *</span>}
-        </FormLabel>
-      )}
-      <div className="space-y-3">
-        {fields.length === 0 && (
-          <div className="text-sm text-muted-foreground">
-            {t("forms.noItemsAdded", { label: label.toLowerCase() })}
-          </div>
-        )}
-        {fields.map((fieldEntry, index) => (
-          <Card key={fieldEntry.id} className="shadow-none">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {t("forms.itemIndex", { index: index + 1 })}
-              </CardTitle>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => remove(index)}
-                disabled={disabled}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <SchemaObjectFields
-                schema={itemsSchema}
-                control={control}
-                path={`${fieldPath}.${index}`}
-                disabled={disabled}
-                forceMasked={forceMasked}
-                autoDetectSensitiveFields={autoDetectSensitiveFields}
-              />
-            </CardContent>
-          </Card>
-        ))}
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => append(getInitialValue(itemsSchema))}
-          disabled={disabled}
-          data-testid={`btn-add-${fieldName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t("forms.addItem", { label })}
-        </Button>
-      </div>
-      <FormMessage />
-    </FormItem>
-  );
-}
-
 function SchemaField({
   name,
   schema,
@@ -1170,7 +1074,6 @@ function SchemaField({
   forceMasked = false,
   autoDetectSensitiveFields = true,
 }: SchemaFieldProps) {
-  const { t } = useTranslation();
   const nullable = hasNullType(schema);
   const normalizedSchema = normalizeAnyOfSchema(schema);
   const fieldPath = path ? `${path}.${name}` : name;
@@ -1256,23 +1159,6 @@ function SchemaField({
     const hasEnumItems =
       Array.isArray(itemsSchema.enum) && itemsSchema.enum.length > 0;
 
-    if (!hasEnumItems && isObjectSchema(itemsSchema) && itemsSchema.properties) {
-      return (
-        <ComplexObjectArrayField
-          control={control}
-          fieldName={fieldName}
-          fieldPath={fieldPath}
-          itemsSchema={itemsSchema}
-          label={label}
-          required={required}
-          hideLabel={hideLabel}
-          disabled={disabled}
-          forceMasked={forceMasked}
-          autoDetectSensitiveFields={autoDetectSensitiveFields}
-        />
-      );
-    }
-
     return (
       <FormField
         control={control}
@@ -1299,7 +1185,7 @@ function SchemaField({
               <div className="space-y-3">
                 {items.length === 0 && !hasEnumItems && (
                   <div className="text-sm text-muted-foreground">
-                    {t("forms.noItemsAdded", { label: label.toLowerCase() })}
+                    No {label.toLowerCase()} added yet.
                   </div>
                 )}
                 {hasEnumItems && (
@@ -1350,7 +1236,7 @@ function SchemaField({
                           <Card key={index} className="shadow-none">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                               <CardTitle className="text-sm font-medium">
-                                {t("forms.itemIndex", { index: index + 1 })}
+                                Item {index + 1}
                               </CardTitle>
                               <Button
                                 type="button"
@@ -1422,7 +1308,7 @@ function SchemaField({
                                 disabled={disabled}
                               >
                                 <SelectTrigger>
-                                  <SelectValue placeholder={t("common.selectOption")} />
+                                  <SelectValue placeholder="Select option" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   {options.map((option) => (
@@ -1462,7 +1348,7 @@ function SchemaField({
                               />
                             </FormControl>
                             <span className="text-sm text-muted-foreground">
-                              {t("forms.itemIndex", { index: index + 1 })}
+                              Item {index + 1}
                             </span>
                             <Button
                               type="button"
@@ -1518,7 +1404,7 @@ function SchemaField({
                                 handleValueChange(event.target.value)
                               }
                               placeholder={
-                                itemsSchema.description || t("forms.enterValue")
+                                itemsSchema.description || "Enter value"
                               }
                               autoComplete="off"
                               disabled={disabled}
@@ -1546,7 +1432,7 @@ function SchemaField({
                       data-testid={`btn-add-${fieldName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}
                     >
                       <Plus className="mr-2 h-4 w-4" />
-                      {t("forms.addItem", { label })}
+                      Add {label}
                     </Button>
                   </>
                 )}
@@ -1597,13 +1483,13 @@ function SchemaField({
             >
               <FormControl>
                 <SelectTrigger>
-                  <SelectValue placeholder={t("common.selectOption")} />
+                  <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
                 {(nullable || !required) && (
                   <SelectItem value="__none__">
-                    {nullable ? t("common.none") : t("common.notSet")}
+                    {nullable ? "None" : "Not set"}
                   </SelectItem>
                 )}
                 {options.map((option) => (
@@ -1672,9 +1558,11 @@ function SchemaField({
                 value={field.value ?? ""}
                 onChange={(event) => {
                   const raw = event.target.value;
-                  // Store "" directly so RHF doesn't reset to the registered default.
-                  // The zod preprocess converts "" → undefined on validation/submit.
-                  field.onChange(raw === "" ? "" : coerceNumberInput(raw));
+                  if (raw === "" || raw === null) {
+                    field.onChange(null);
+                  } else {
+                    field.onChange(coerceNumberInput(raw));
+                  }
                 }}
                 autoComplete="off"
                 disabled={disabled}
@@ -1694,8 +1582,7 @@ function SchemaField({
       (name.toLowerCase().includes("password") ||
         name.toLowerCase().includes("token") ||
         name.toLowerCase().includes("secret") ||
-        name.toLowerCase().includes("key") ||
-        name.toLowerCase().includes("ssl_ca")));
+        name.toLowerCase().includes("key")));
   const isUrl =
     normalizedSchema.format === "uri" || name.toLowerCase().includes("url");
   const isLongField = isLongText(normalizedSchema);
@@ -1716,7 +1603,7 @@ function SchemaField({
             {isPassword ? (
               <Input
                 type="password"
-                placeholder={formatPlaceholder(name, normalizedSchema, t)}
+                placeholder={formatPlaceholder(name, normalizedSchema)}
                 {...field}
                 value={field.value ?? ""}
                 autoComplete="new-password"
@@ -1725,7 +1612,7 @@ function SchemaField({
               />
             ) : isLongField ? (
               <Textarea
-                placeholder={formatPlaceholder(name, normalizedSchema, t)}
+                placeholder={formatPlaceholder(name, normalizedSchema)}
                 {...field}
                 value={field.value ?? ""}
                 autoComplete="off"
@@ -1735,7 +1622,7 @@ function SchemaField({
             ) : (
               <Input
                 type={isUrl ? "url" : "text"}
-                placeholder={formatPlaceholder(name, normalizedSchema, t)}
+                placeholder={formatPlaceholder(name, normalizedSchema)}
                 {...field}
                 value={field.value ?? ""}
                 autoComplete="off"
@@ -1832,9 +1719,9 @@ export const JsonSchemaForm = React.forwardRef<
     onSubmit,
     onSecondarySubmit,
     onCancel,
-    submitLabel,
+    submitLabel = "Submit",
     secondarySubmitLabel,
-    cancelLabel,
+    cancelLabel = "Cancel",
     showCancel = true,
     disabled = false,
     assistantSourceType,
@@ -1844,10 +1731,6 @@ export const JsonSchemaForm = React.forwardRef<
   },
   ref,
 ) {
-  const { t } = useTranslation();
-  const finalSubmitLabel = submitLabel || t("common.submit");
-  const finalCancelLabel = cancelLabel || t("common.cancel");
-
   const zodSchema = React.useMemo(() => {
     const shape: Record<string, z.ZodTypeAny> = {};
     const required = schema.required || [];
@@ -2074,8 +1957,8 @@ export const JsonSchemaForm = React.forwardRef<
               : null;
             return (
               <AiAssistedCard
-                title={t("forms.sourceName")}
-                description={t("forms.sourceNameDesc")}
+                title="Source Name"
+                description="Give this source a clear, unique name so it stands out later."
                 knowledge={knowledge}
                 promptContext={
                   assistantSourceType && knowledge
@@ -2114,7 +1997,7 @@ export const JsonSchemaForm = React.forwardRef<
             );
             return (
               <AiAssistedCard
-                title={t("forms.requiredFields")}
+                title="Required fields"
                 description={undefined}
                 knowledge={section.knowledge}
                 promptContext={
@@ -2155,7 +2038,7 @@ export const JsonSchemaForm = React.forwardRef<
             );
             return (
               <AiAssistedCard
-                title={t("forms.authentication")}
+                title="Authentication"
                 description={undefined}
                 knowledge={section.knowledge}
                 promptContext={
@@ -2199,14 +2082,14 @@ export const JsonSchemaForm = React.forwardRef<
           >
             <AccordionItem
               value="optional-parameters"
-              className="border-border/70 shadow-[6px_6px_0_var(--color-border)]"
+              className="border-black/70 shadow-[6px_6px_0_#000]"
             >
               <AccordionTrigger
                 className="hover:no-underline"
-                caption={t("forms.optionalParametersDesc")}
+                caption="Additional settings you can configure when the default connection setup is not enough."
                 data-testid="accordion-trigger-optional"
               >
-                {t("forms.optionalParameters")}
+                Optional Parameters
               </AccordionTrigger>
               <AccordionContent className="space-y-4">
                 {optionalBlockEntries.map(([key, value]) => {
@@ -2260,8 +2143,8 @@ export const JsonSchemaForm = React.forwardRef<
 
                 {legacyOptionalSimpleEntries.length > 0 && (
                   <AiAssistedCard
-                    title={t("forms.additionalConfig")}
-                    description={t("forms.additionalConfigDesc")}
+                    title="Additional Configuration"
+                    description="General optional fields that fine-tune this source."
                     withShadow={false}
                   >
                     <div className="grid gap-4 md:grid-cols-2">
@@ -2344,9 +2227,9 @@ export const JsonSchemaForm = React.forwardRef<
             const section = resolveKnowledge("required", "configuration");
             return (
               <AiAssistedCard
-                title={t("forms.requiredConfig")}
+                title="Required Configuration"
                 description={
-                  schema.description || t("sources.stepper.sourceDetailsDesc")
+                  schema.description || "Complete these fields to finish setup."
                 }
                 knowledge={section.knowledge}
                 promptContext={
@@ -2425,7 +2308,7 @@ export const JsonSchemaForm = React.forwardRef<
         {samplingBlock && (
           <FormField
             control={form.control}
-            name={samplingBlock.key}
+            name={samplingBlock.key as never}
             render={({ field }) => (
               <SamplingCard
                 value={field.value as SamplingValue}
@@ -2447,7 +2330,8 @@ export const JsonSchemaForm = React.forwardRef<
 
         {shouldShowValidationBanner && (
           <div className="rounded-[4px] border-2 border-destructive/70 bg-destructive/10 px-3 py-2 text-xs text-destructive">
-            {t("forms.validationFailed")}
+            Validation failed. Complete all required fields before testing or
+            saving.
           </div>
         )}
 
@@ -2459,9 +2343,9 @@ export const JsonSchemaForm = React.forwardRef<
                 variant="outline"
                 onClick={onCancel}
                 disabled={disabled}
-                className="rounded-[4px] border-2 border-border"
+                className="rounded-[4px] border-2 border-black"
               >
-                {finalCancelLabel}
+                {cancelLabel}
               </Button>
             )}
             {onSecondarySubmit && secondarySubmitLabel && (
@@ -2470,7 +2354,7 @@ export const JsonSchemaForm = React.forwardRef<
                 variant="outline"
                 onClick={handleSecondarySubmit}
                 disabled={disabled}
-                className="rounded-[4px] border-2 border-border"
+                className="rounded-[4px] border-2 border-black"
                 data-testid="btn-test-source"
               >
                 {secondarySubmitLabel}
@@ -2479,10 +2363,10 @@ export const JsonSchemaForm = React.forwardRef<
             <Button
               type="submit"
               disabled={disabled}
-              className="rounded-[4px] border-2 border-border bg-black text-white hover:bg-black/90"
+              className="rounded-[4px] border-2 border-black bg-black text-white hover:bg-black/90"
               data-testid="btn-save-source"
             >
-              {finalSubmitLabel}
+              {submitLabel}
             </Button>
           </div>
         )}

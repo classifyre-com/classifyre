@@ -16,14 +16,7 @@ async function mockCustomDetectorList(
       });
       return;
     }
-    if (url.pathname.includes("/custom-detectors/examples")) {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify([]),
-      });
-      return;
-    }
+
     await route.continue();
   });
 }

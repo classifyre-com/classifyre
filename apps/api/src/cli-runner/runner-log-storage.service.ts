@@ -1,7 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
 import * as fs from 'fs/promises';
 import { createReadStream, type Stats } from 'fs';
 import * as path from 'path';
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+  CreateBucketCommand,
+  HeadBucketCommand,
+  NoSuchKey,
+} from '@aws-sdk/client-s3';
+import { Readable } from 'stream';
 import { type LogLevel, RunnerLogEntryDto, RunnerLogsResponseDto } from './dto';
 
 type RunnerLogStream = 'stderr' | 'stdout' | 'combined';
@@ -12,20 +27,116 @@ interface StoredRunnerLogEntry {
   message: string;
 }
 
+interface S3Config {
+  client: S3Client;
+  bucket: string;
+  prefix: string;
+}
+
 @Injectable()
-export class RunnerLogStorageService {
+export class RunnerLogStorageService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(RunnerLogStorageService.name);
+
+  // Filesystem state
   private readonly rootDir = path.resolve(
     process.env.RUNNER_LOGS_DIR ||
       path.join(process.cwd(), 'var', 'runner-logs'),
   );
+  private readonly tempDir = path.resolve(
+    process.env.TEMP_DIR || '/tmp',
+    'classifyre-runner-logs',
+  );
+
+  // Shared write-serialisation
   private readonly lineBuffers = new Map<string, string>();
   private readonly writeQueues = new Map<string, Promise<void>>();
 
+  // S3 backend (populated when S3_BUCKET is set)
+  private s3: S3Config | null = null;
+
+  // Per-runner S3 sync timers
+  private readonly s3SyncTimers = new Map<string, NodeJS.Timeout>();
+
+  async onModuleInit(): Promise<void> {
+    const bucket = process.env.S3_BUCKET;
+    if (!bucket) {
+      return; // filesystem mode
+    }
+
+    const endpoint = process.env.S3_ENDPOINT;
+    const region = process.env.S3_REGION || 'us-east-1';
+    const forcePathStyle = process.env.S3_FORCE_PATH_STYLE !== 'false';
+
+    const client = new S3Client({
+      region,
+      ...(endpoint ? { endpoint } : {}),
+      forcePathStyle,
+      credentials:
+        process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY
+          ? {
+              accessKeyId: process.env.S3_ACCESS_KEY_ID,
+              secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+            }
+          : undefined,
+    });
+
+    this.s3 = {
+      client,
+      bucket,
+      prefix: process.env.S3_LOG_PREFIX || 'runner-logs/',
+    };
+
+    // Retry bucket creation with exponential backoff — SeaweedFS may not be
+    // ready yet when the API starts up, especially on first install.
+    await this.retryWithBackoff(
+      () => this.ensureBucket(),
+      10,
+      1000,
+      `S3 bucket ${bucket}`,
+    );
+    await fs.mkdir(this.tempDir, { recursive: true });
+
+    this.logger.log(
+      `S3 log storage: bucket=${bucket} endpoint=${endpoint || 'aws'} prefix=${this.s3.prefix}`,
+    );
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    // Final sync for any active runners before clearing timers
+    if (this.s3) {
+      const activeRunners = Array.from(this.s3SyncTimers.keys());
+      await Promise.all(
+        activeRunners.map(async (runnerId) => {
+          try {
+            await this.waitForPendingWrites(runnerId);
+            await this.syncToS3(runnerId);
+          } catch (err: any) {
+            this.logger.warn(
+              `Final S3 sync failed for ${runnerId}: ${err?.message}`,
+            );
+          }
+        }),
+      );
+    }
+
+    for (const timer of this.s3SyncTimers.values()) {
+      clearInterval(timer);
+    }
+    this.s3SyncTimers.clear();
+  }
+
   async initializeRunner(runnerId: string): Promise<void> {
-    await this.ensureRunnerDir(runnerId);
-    await fs.writeFile(this.getRunnerLogPath(runnerId), '', 'utf8');
-    this.clearRunnerBuffers(runnerId);
+    if (this.s3) {
+      await fs.mkdir(this.getTempRunnerDir(runnerId), { recursive: true });
+      await fs.writeFile(this.getTempLogPath(runnerId), '', 'utf8');
+      this.clearRunnerBuffers(runnerId);
+      await this.s3PutObject(runnerId, '');
+      this.startSyncTimer(runnerId);
+    } else {
+      await this.ensureRunnerDir(runnerId);
+      await fs.writeFile(this.getRunnerLogPath(runnerId), '', 'utf8');
+      this.clearRunnerBuffers(runnerId);
+    }
   }
 
   async appendChunk(
@@ -33,12 +144,18 @@ export class RunnerLogStorageService {
     chunk: string,
     stream: RunnerLogStream = 'stderr',
   ): Promise<void> {
-    if (!chunk) {
-      return;
-    }
+    if (!chunk) return;
+
+    const filePath = this.s3
+      ? this.getTempLogPath(runnerId)
+      : this.getRunnerLogPath(runnerId);
 
     await this.enqueueWrite(runnerId, async () => {
-      await this.ensureRunnerDir(runnerId);
+      if (this.s3) {
+        await fs.mkdir(this.getTempRunnerDir(runnerId), { recursive: true });
+      } else {
+        await this.ensureRunnerDir(runnerId);
+      }
 
       const bufferKey = this.getBufferKey(runnerId, stream);
       const previousBuffer = this.lineBuffers.get(bufferKey) || '';
@@ -47,9 +164,7 @@ export class RunnerLogStorageService {
       const remainder = lines.pop() || '';
       this.lineBuffers.set(bufferKey, remainder);
 
-      if (lines.length === 0) {
-        return;
-      }
+      if (lines.length === 0) return;
 
       const encoded = lines
         .map((line) =>
@@ -58,13 +173,17 @@ export class RunnerLogStorageService {
         .join('');
 
       if (encoded) {
-        await fs.appendFile(this.getRunnerLogPath(runnerId), encoded, 'utf8');
+        await fs.appendFile(filePath, encoded, 'utf8');
       }
     });
   }
 
   async finalizeRunner(runnerId: string): Promise<void> {
     await this.waitForPendingWrites(runnerId);
+
+    const filePath = this.s3
+      ? this.getTempLogPath(runnerId)
+      : this.getRunnerLogPath(runnerId);
 
     const pendingEntries: StoredRunnerLogEntry[] = [];
     for (const stream of [
@@ -82,26 +201,48 @@ export class RunnerLogStorageService {
       this.lineBuffers.delete(bufferKey);
     }
 
-    if (pendingEntries.length === 0) {
-      return;
+    if (pendingEntries.length > 0) {
+      await this.enqueueWrite(runnerId, async () => {
+        const payload = pendingEntries
+          .map((entry) => this.encodeEntry(entry))
+          .join('');
+        if (payload) await fs.appendFile(filePath, payload, 'utf8');
+      });
+      await this.waitForPendingWrites(runnerId);
     }
 
-    await this.enqueueWrite(runnerId, async () => {
-      await this.ensureRunnerDir(runnerId);
-      const payload = pendingEntries
-        .map((entry) => this.encodeEntry(entry))
-        .join('');
-      if (payload) {
-        await fs.appendFile(this.getRunnerLogPath(runnerId), payload, 'utf8');
-      }
-    });
+    if (this.s3) {
+      this.stopSyncTimer(runnerId);
+      await this.syncToS3(runnerId);
+      await fs.rm(this.getTempRunnerDir(runnerId), {
+        recursive: true,
+        force: true,
+      });
+    }
   }
 
   async deleteRunnerLogs(runnerId: string): Promise<void> {
     await this.waitForPendingWrites(runnerId);
     this.writeQueues.delete(runnerId);
     this.clearRunnerBuffers(runnerId);
-    await fs.rm(this.getRunnerDir(runnerId), { recursive: true, force: true });
+
+    if (this.s3) {
+      this.stopSyncTimer(runnerId);
+      await fs.rm(this.getTempRunnerDir(runnerId), {
+        recursive: true,
+        force: true,
+      });
+      await this.s3DeleteObject(runnerId).catch((err) => {
+        this.logger.warn(
+          `Could not delete S3 log for ${runnerId}: ${err?.message}`,
+        );
+      });
+    } else {
+      await fs.rm(this.getRunnerDir(runnerId), {
+        recursive: true,
+        force: true,
+      });
+    }
   }
 
   async listLogs(params: {
@@ -121,11 +262,28 @@ export class RunnerLogStorageService {
     );
     const streamFilter = new Set(params.streams ?? []);
 
-    const logPath = this.getRunnerLogPath(params.runnerId);
-    const stats = await this.safeStat(logPath);
+    let logPath: string;
+    let stats: Stats | null;
+
+    if (this.s3) {
+      // Prefer local temp file for active runners on this replica
+      const tempPath = this.getTempLogPath(params.runnerId);
+      const tempStat = await this.safeStat(tempPath);
+      if (tempStat) {
+        logPath = tempPath;
+        stats = tempStat;
+      } else {
+        // Download from S3 to a temp file for filtering
+        logPath = await this.downloadS3ToTemp(params.runnerId);
+        stats = await this.safeStat(logPath);
+      }
+    } else {
+      logPath = this.getRunnerLogPath(params.runnerId);
+      stats = await this.safeStat(logPath);
+    }
 
     if (!stats) {
-      return this.emptyResponse(params.runnerId, take);
+      return this.emptyResponse(params.runnerId, take, params.cursor);
     }
 
     if (sortOrder === 'desc') {
@@ -203,7 +361,7 @@ export class RunnerLogStorageService {
 
     if (entries.length < take && remainder) {
       const lineOffset = currentOffset;
-      currentOffset = stats.size;
+      currentOffset = fileSize;
       const entry = this.decodeEntry(remainder, lineOffset);
       if (this.matchesFilter(entry, searchLower, levelFilter, streamFilter)) {
         entries.push(entry);
@@ -370,6 +528,117 @@ export class RunnerLogStorageService {
     return rawMessage.trim();
   }
 
+  // ── S3 helpers ────────────────────────────────────────────────────────────
+
+  private s3Key(runnerId: string): string {
+    return `${this.s3!.prefix}${runnerId}/events.ndjson`;
+  }
+
+  private async ensureBucket(): Promise<void> {
+    const { client, bucket } = this.s3!;
+    try {
+      await client.send(new HeadBucketCommand({ Bucket: bucket }));
+    } catch {
+      try {
+        await client.send(new CreateBucketCommand({ Bucket: bucket }));
+        this.logger.log(`Created S3 bucket: ${bucket}`);
+      } catch (err: any) {
+        // Ignore BucketAlreadyOwnedByYou (concurrent creation races)
+        if (err?.Code !== 'BucketAlreadyOwnedByYou') {
+          this.logger.error(
+            `Failed to create S3 bucket ${bucket}: ${err?.message}`,
+          );
+        }
+      }
+    }
+  }
+
+  private async s3PutObject(
+    runnerId: string,
+    content: string | Buffer,
+  ): Promise<void> {
+    const { client, bucket } = this.s3!;
+    await client.send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: this.s3Key(runnerId),
+        Body:
+          typeof content === 'string' ? Buffer.from(content, 'utf8') : content,
+        ContentType: 'application/x-ndjson',
+      }),
+    );
+  }
+
+  private async s3DeleteObject(runnerId: string): Promise<void> {
+    const { client, bucket } = this.s3!;
+    await client.send(
+      new DeleteObjectCommand({ Bucket: bucket, Key: this.s3Key(runnerId) }),
+    );
+  }
+
+  private async syncToS3(runnerId: string): Promise<void> {
+    const tempPath = this.getTempLogPath(runnerId);
+    const stat = await this.safeStat(tempPath);
+    if (!stat) return;
+    const content = await fs.readFile(tempPath);
+    await this.s3PutObject(runnerId, content);
+  }
+
+  private async downloadS3ToTemp(runnerId: string): Promise<string> {
+    const tempPath = path.join(
+      this.tempDir,
+      `${runnerId}-download-${Date.now()}.ndjson`,
+    );
+    const { client, bucket } = this.s3!;
+    const key = this.s3Key(runnerId);
+
+    try {
+      const obj = await client.send(
+        new GetObjectCommand({ Bucket: bucket, Key: key }),
+      );
+      const chunks: Buffer[] = [];
+      for await (const chunk of obj.Body as Readable) {
+        chunks.push(
+          Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk as string),
+        );
+      }
+      await fs.writeFile(tempPath, Buffer.concat(chunks));
+    } catch (err: any) {
+      if (
+        err instanceof NoSuchKey ||
+        err?.name === 'NoSuchKey' ||
+        err?.$metadata?.httpStatusCode === 404
+      ) {
+        // Object does not exist — create empty temp file
+        await fs.writeFile(tempPath, '');
+      } else {
+        throw err;
+      }
+    }
+
+    return tempPath;
+  }
+
+  private startSyncTimer(runnerId: string): void {
+    // Sync every 5 seconds so other API replicas can read fresh logs
+    const timer = setInterval(() => {
+      void this.waitForPendingWrites(runnerId)
+        .then(() => this.syncToS3(runnerId))
+        .catch((err) => {
+          this.logger.warn(`S3 sync failed for ${runnerId}: ${err?.message}`);
+        });
+    }, 5_000);
+    this.s3SyncTimers.set(runnerId, timer);
+  }
+
+  private stopSyncTimer(runnerId: string): void {
+    const timer = this.s3SyncTimers.get(runnerId);
+    if (timer) {
+      clearInterval(timer);
+      this.s3SyncTimers.delete(runnerId);
+    }
+  }
+
   // ── encoding / decoding ───────────────────────────────────────────────────
 
   private createEntry(
@@ -454,6 +723,31 @@ export class RunnerLogStorageService {
     };
   }
 
+  private async retryWithBackoff<T>(
+    operation: () => Promise<T>,
+    maxRetries: number,
+    baseDelayMs: number,
+    description: string,
+  ): Promise<T> {
+    let lastError: Error | undefined;
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (err: any) {
+        lastError = err;
+        if (attempt === maxRetries) break;
+        const delay = baseDelayMs * 2 ** attempt;
+        this.logger.warn(
+          `${description} not ready (attempt ${attempt + 1}/${maxRetries + 1}): ${err?.message}. Retrying in ${delay}ms...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+    throw new Error(
+      `${description} unavailable after ${maxRetries + 1} attempts: ${lastError?.message}`,
+    );
+  }
+
   // ── filesystem helpers ────────────────────────────────────────────────────
 
   private async ensureRunnerDir(runnerId: string): Promise<void> {
@@ -483,7 +777,6 @@ export class RunnerLogStorageService {
           `Failed writing runner logs for ${runnerId}: ${error?.message || error}`,
         );
       });
-
     this.writeQueues.set(runnerId, next);
     return next;
   }
@@ -506,5 +799,13 @@ export class RunnerLogStorageService {
 
   private getRunnerLogPath(runnerId: string): string {
     return path.join(this.getRunnerDir(runnerId), 'events.ndjson');
+  }
+
+  private getTempRunnerDir(runnerId: string): string {
+    return path.join(this.tempDir, runnerId);
+  }
+
+  private getTempLogPath(runnerId: string): string {
+    return path.join(this.getTempRunnerDir(runnerId), 'events.ndjson');
   }
 }

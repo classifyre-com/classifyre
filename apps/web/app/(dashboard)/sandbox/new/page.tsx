@@ -180,7 +180,6 @@ export default function NewSandboxScanPage() {
         type: string;
         enabled: boolean;
         config: Record<string, unknown>;
-        custom_detector_key?: string;
       }> = [...enabledDetectors];
 
       if (selectedCustomDetectorIds.length > 0) {
@@ -190,8 +189,7 @@ export default function NewSandboxScanPage() {
             const response = await fetch(`${base}/custom-detectors/${id}`);
             if (!response.ok) return null;
             return response.json() as Promise<{
-              key?: string;
-              config?: Record<string, unknown>;
+              config: Record<string, unknown>;
             }>;
           }),
         );
@@ -201,7 +199,6 @@ export default function NewSandboxScanPage() {
           detectorPayload.push({
             type: "CUSTOM",
             enabled: true,
-            custom_detector_key: customDetector.key ?? "",
             config: customDetector.config ?? {},
           });
         }
@@ -323,7 +320,7 @@ export default function NewSandboxScanPage() {
         </div>
       </div>
 
-      <div className="sticky top-0 z-20 -mx-4 mb-6 border-b-2 border-border bg-background/95 px-4 py-2 backdrop-blur-sm md:hidden">
+      <div className="sticky top-0 z-20 -mx-4 mb-6 border-b-2 border-black bg-background/95 px-4 py-2 backdrop-blur-sm md:hidden">
         <HorizontalSandboxStepperNav
           activeStepId={activeStepId}
           canNavigateToDetectors={canNavigateToDetectors}

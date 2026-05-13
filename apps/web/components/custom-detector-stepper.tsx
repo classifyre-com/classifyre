@@ -2,66 +2,20 @@
 
 import * as React from "react";
 import { cn } from "@workspace/ui/lib/utils";
-import { useTranslation } from "@/hooks/use-translation";
 
-export type CustomDetectorStepId =
-  | "identity"
-  | "entities"
-  | "classification"
-  | "validation"
-  | "model"
-  | "training";
+export type CustomDetectorStepId = "method" | "policy" | "tests";
 
-type AnyStepId = string;
-
-interface StepItem {
-  id: AnyStepId;
+type StepItem<TStepId extends string = CustomDetectorStepId> = {
+  id: TStepId;
   title: string;
   description: string;
-}
+};
 
-interface StepperNavProps<T extends AnyStepId = AnyStepId> {
-  activeStepId: T;
-  onNavigate: (id: T) => void;
-  /** Override internal steps. Used by the full editor with its own step flow. */
-  steps?: StepItem[];
-}
-
-function useSteps() {
-  const { t } = useTranslation();
-  return [
-    {
-      id: "identity" as CustomDetectorStepId,
-      title: t("detectors.stepper.identity"),
-      description: t("detectors.stepper.identityDesc"),
-    },
-    {
-      id: "entities" as CustomDetectorStepId,
-      title: t("detectors.stepper.entities"),
-      description: t("detectors.stepper.entitiesDesc"),
-    },
-    {
-      id: "classification" as CustomDetectorStepId,
-      title: t("detectors.stepper.classification"),
-      description: t("detectors.stepper.classificationDesc"),
-    },
-    {
-      id: "validation" as CustomDetectorStepId,
-      title: t("detectors.stepper.validation"),
-      description: t("detectors.stepper.validationDesc"),
-    },
-    {
-      id: "model" as CustomDetectorStepId,
-      title: t("detectors.stepper.model"),
-      description: t("detectors.stepper.modelDesc"),
-    },
-    {
-      id: "training" as CustomDetectorStepId,
-      title: t("detectors.stepper.training"),
-      description: t("detectors.stepper.trainingDesc"),
-    },
-  ];
-}
+type CustomDetectorStepperNavProps<TStepId extends string = CustomDetectorStepId> = {
+  steps: StepItem<TStepId>[];
+  activeStepId: TStepId;
+  onNavigate: (id: TStepId) => void;
+};
 
 function StepIndicator({
   status,
@@ -75,9 +29,9 @@ function StepIndicator({
       className={cn(
         "flex h-6 w-6 shrink-0 items-center justify-center rounded-[3px] border-2 text-[10px] font-bold transition-colors",
         status === "active" &&
-          "border-border bg-accent text-accent-foreground shadow-[2px_2px_0_var(--color-border)]",
+          "border-black bg-[#b7ff00] text-black shadow-[2px_2px_0_#000]",
         status === "done" &&
-          "border-border bg-black text-white dark:border-white dark:bg-white dark:text-accent-foreground",
+          "border-black bg-black text-white dark:border-white dark:bg-white dark:text-black",
         status === "upcoming" &&
           "border-border bg-background text-muted-foreground",
       )}
@@ -87,14 +41,12 @@ function StepIndicator({
   );
 }
 
-export function VerticalCustomDetectorStepperNav<T extends AnyStepId>({
+export function VerticalCustomDetectorStepperNav<TStepId extends string = CustomDetectorStepId>({
+  steps,
   activeStepId,
   onNavigate,
-  steps: externalSteps,
-}: StepperNavProps<T>) {
-  const internalSteps = useSteps();
-  const steps = externalSteps ?? internalSteps;
-  const activeIndex = steps.findIndex((s) => s.id === activeStepId);
+}: CustomDetectorStepperNavProps<TStepId>) {
+  const activeIndex = steps.findIndex((step) => step.id === activeStepId);
 
   return (
     <nav aria-label="Detector setup steps">
@@ -112,7 +64,7 @@ export function VerticalCustomDetectorStepperNav<T extends AnyStepId>({
                   type="button"
                   tabIndex={-1}
                   aria-hidden="true"
-                  onClick={() => onNavigate(step.id as T)}
+                  onClick={() => onNavigate(step.id)}
                   className="mt-2"
                 >
                   <StepIndicator
@@ -132,7 +84,7 @@ export function VerticalCustomDetectorStepperNav<T extends AnyStepId>({
 
               <button
                 type="button"
-                onClick={() => onNavigate(step.id as T)}
+                onClick={() => onNavigate(step.id)}
                 className={cn(
                   "group mb-1 flex-1 rounded-[4px] px-2 py-2 text-left transition-colors",
                   !isLast && "pb-6",
@@ -160,14 +112,12 @@ export function VerticalCustomDetectorStepperNav<T extends AnyStepId>({
   );
 }
 
-export function HorizontalCustomDetectorStepperNav<T extends AnyStepId>({
+export function HorizontalCustomDetectorStepperNav<TStepId extends string = CustomDetectorStepId>({
+  steps,
   activeStepId,
   onNavigate,
-  steps: externalSteps,
-}: StepperNavProps<T>) {
-  const internalSteps = useSteps();
-  const steps = externalSteps ?? internalSteps;
-  const activeIndex = steps.findIndex((s) => s.id === activeStepId);
+}: CustomDetectorStepperNavProps<TStepId>) {
+  const activeIndex = steps.findIndex((step) => step.id === activeStepId);
 
   return (
     <nav aria-label="Detector setup steps">
@@ -182,7 +132,7 @@ export function HorizontalCustomDetectorStepperNav<T extends AnyStepId>({
             <li key={step.id} className="flex min-w-0 flex-1 items-center gap-2">
               <button
                 type="button"
-                onClick={() => onNavigate(step.id as T)}
+                onClick={() => onNavigate(step.id)}
                 className={cn(
                   "flex min-w-0 flex-1 items-center gap-2 rounded-[4px] px-2 py-1.5 text-left transition-colors",
                   !isActive && "hover:bg-accent/10",
