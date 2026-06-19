@@ -32,6 +32,7 @@ TYPE_TO_DEFINITION = {
     "NOTION": "NotionInput",
     "EMAIL": "EmailInput",
     "YOUTUBE": "YouTubeInput",
+    "MICROSOFT_365": "Microsoft365Input",
 }
 
 SCHEMAS_DIR = Path(__file__).parent.parent / "src" / "schemas"

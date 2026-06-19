@@ -909,6 +909,7 @@ export const SearchAssetsControllerExportAssetsAssetSourceTypeEnum = {
     Tableau: 'TABLEAU',
     Email: 'EMAIL',
     Youtube: 'YOUTUBE',
+    Microsoft365: 'MICROSOFT_365',
     Custom: 'CUSTOM'
 } as const;
 export type SearchAssetsControllerExportAssetsAssetSourceTypeEnum = typeof SearchAssetsControllerExportAssetsAssetSourceTypeEnum[keyof typeof SearchAssetsControllerExportAssetsAssetSourceTypeEnum];
@@ -1022,6 +1023,7 @@ export const SearchAssetsControllerQueryAssetsAssetSourceTypeEnum = {
     Tableau: 'TABLEAU',
     Email: 'EMAIL',
     Youtube: 'YOUTUBE',
+    Microsoft365: 'MICROSOFT_365',
     Custom: 'CUSTOM'
 } as const;
 export type SearchAssetsControllerQueryAssetsAssetSourceTypeEnum = typeof SearchAssetsControllerQueryAssetsAssetSourceTypeEnum[keyof typeof SearchAssetsControllerQueryAssetsAssetSourceTypeEnum];
@@ -1135,6 +1137,7 @@ export const SourceAssetsControllerListSourceAssetsSourceTypesEnum = {
     Tableau: 'TABLEAU',
     Email: 'EMAIL',
     Youtube: 'YOUTUBE',
+    Microsoft365: 'MICROSOFT_365',
     Custom: 'CUSTOM'
 } as const;
 export type SourceAssetsControllerListSourceAssetsSourceTypesEnum = typeof SourceAssetsControllerListSourceAssetsSourceTypesEnum[keyof typeof SourceAssetsControllerListSourceAssetsSourceTypesEnum];

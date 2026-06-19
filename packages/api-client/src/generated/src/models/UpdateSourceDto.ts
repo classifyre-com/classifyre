@@ -90,7 +90,8 @@ export const UpdateSourceDtoTypeEnum = {
     Sqlite: 'SQLITE',
     Notion: 'NOTION',
     Email: 'EMAIL',
-    Youtube: 'YOUTUBE'
+    Youtube: 'YOUTUBE',
+    Microsoft365: 'MICROSOFT_365'
 } as const;
 export type UpdateSourceDtoTypeEnum = typeof UpdateSourceDtoTypeEnum[keyof typeof UpdateSourceDtoTypeEnum];
 
