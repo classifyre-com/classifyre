@@ -74,6 +74,7 @@ export const SearchSourcesFiltersDtoTypeEnum = {
     Tableau: 'TABLEAU',
     Email: 'EMAIL',
     Youtube: 'YOUTUBE',
+    Microsoft365: 'MICROSOFT_365',
     Custom: 'CUSTOM'
 } as const;
 export type SearchSourcesFiltersDtoTypeEnum = typeof SearchSourcesFiltersDtoTypeEnum[keyof typeof SearchSourcesFiltersDtoTypeEnum];

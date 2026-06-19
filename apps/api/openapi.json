@@ -1170,6 +1170,7 @@
                   "TABLEAU",
                   "EMAIL",
                   "YOUTUBE",
+                  "MICROSOFT_365",
                   "CUSTOM"
                 ]
               }
@@ -1513,6 +1514,7 @@
                   "TABLEAU",
                   "EMAIL",
                   "YOUTUBE",
+                  "MICROSOFT_365",
                   "CUSTOM"
                 ]
               }
@@ -1878,6 +1880,7 @@
                   "TABLEAU",
                   "EMAIL",
                   "YOUTUBE",
+                  "MICROSOFT_365",
                   "CUSTOM"
                 ]
               }
@@ -7771,7 +7774,8 @@
               "SQLITE",
               "NOTION",
               "EMAIL",
-              "YOUTUBE"
+              "YOUTUBE",
+              "MICROSOFT_365"
             ],
             "description": "The type of the source",
             "example": "WORDPRESS"
@@ -7956,7 +7960,8 @@
               "SQLITE",
               "NOTION",
               "EMAIL",
-              "YOUTUBE"
+              "YOUTUBE",
+              "MICROSOFT_365"
             ],
             "description": "The type of the source",
             "example": "WORDPRESS"
@@ -8083,6 +8088,7 @@
                 "TABLEAU",
                 "EMAIL",
                 "YOUTUBE",
+                "MICROSOFT_365",
                 "CUSTOM"
               ]
             }
@@ -8391,6 +8397,7 @@
               "TABLEAU",
               "EMAIL",
               "YOUTUBE",
+              "MICROSOFT_365",
               "CUSTOM"
             ]
           },
@@ -8528,6 +8535,7 @@
                 "TABLEAU",
                 "EMAIL",
                 "YOUTUBE",
+                "MICROSOFT_365",
                 "CUSTOM"
               ]
             }
@@ -9294,6 +9302,7 @@
               "TABLEAU",
               "EMAIL",
               "YOUTUBE",
+              "MICROSOFT_365",
               "CUSTOM"
             ]
           }
@@ -11182,25 +11191,25 @@
             "type": "string"
           }
         },
-          "required": [
-            "id",
-            "aiEnabled",
-            "mcpEnabled",
-            "language",
-            "timezone",
-            "timeFormat",
-            "aiProviderConfigId",
-            "autopilotInquiryEnabled",
-            "autopilotInquiryDesired",
-            "autopilotInquirySearchable",
-            "autopilotCaseEnabled",
-            "autopilotCaseGuidance",
-            "demoMode",
-            "hfTokenSet",
-            "hfTokenInstanceSet",
-            "createdAt",
-            "updatedAt"
-          ]
+        "required": [
+          "id",
+          "aiEnabled",
+          "mcpEnabled",
+          "language",
+          "timezone",
+          "timeFormat",
+          "aiProviderConfigId",
+          "autopilotInquiryEnabled",
+          "autopilotInquiryDesired",
+          "autopilotInquirySearchable",
+          "autopilotCaseEnabled",
+          "autopilotCaseGuidance",
+          "demoMode",
+          "hfTokenSet",
+          "hfTokenInstanceSet",
+          "createdAt",
+          "updatedAt"
+        ]
       },
       "UpdateInstanceSettingsDto": {
         "type": "object",
@@ -14438,6 +14447,7 @@
                 "TABLEAU",
                 "EMAIL",
                 "YOUTUBE",
+                "MICROSOFT_365",
                 "CUSTOM"
               ]
             }
